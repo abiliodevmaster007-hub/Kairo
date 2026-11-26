@@ -1,0 +1,6 @@
+{
+  "name": "Kairo — UI declarativa para Java",
+  "description": "UI declarativa e nativa para Android, em Java. XML para a estrutura, CSS para o estilo, Java para a lógica.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

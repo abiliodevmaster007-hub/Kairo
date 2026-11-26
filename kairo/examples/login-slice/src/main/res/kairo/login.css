@@ -1,0 +1,21 @@
+Theme {
+  color.primary: #4F46E5;
+  color.surface: #09090B;
+  color.text: #F4F4F5;
+  color.muted: #A1A1AA;
+}
+
+Screen.login-page {
+  background: token(color.surface);
+  color: token(color.text);
+}
+
+Text#heading {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+Button.primary {
+  background: token(color.primary);
+  color: #FFFFFF;
+}

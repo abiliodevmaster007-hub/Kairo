@@ -1,0 +1,68 @@
+Theme {
+  color.primary: #4F46E5;
+  color.surface: #09090B;
+  color.card: #111115;
+  color.text: #F4F4F5;
+  color.muted: #A1A1AA;
+  color.border: #27272A;
+  color.error: #EF4444;
+  spacing.sm: 8px;
+  spacing.md: 16px;
+  spacing.lg: 24px;
+  radius.md: 8px;
+}
+
+Theme light {
+  color.surface: #FAFAFA;
+  color.card: #FFFFFF;
+  color.text: #18181B;
+  color.muted: #52525B;
+  color.border: #E4E4E7;
+}
+
+Theme dark {
+  color.surface: #09090B;
+  color.card: #111115;
+  color.text: #F4F4F5;
+  color.muted: #A1A1AA;
+  color.border: #27272A;
+}
+
+Screen.gallery {
+  background: token(color.surface);
+  color: token(color.text);
+  padding: token(spacing.lg);
+}
+
+.heading {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+Card {
+  background: token(color.card);
+  border-color: token(color.border);
+  border-width: 1px;
+  padding: token(spacing.md);
+  border-radius: token(radius.md);
+}
+
+Button.primary {
+  background: token(color.primary);
+  color: #FFFFFF;
+  border-radius: token(radius.md);
+}
+
+Button:disabled {
+  opacity: 0.45;
+}
+
+Input:focused {
+  border-color: token(color.primary);
+  border-width: 1.5px;
+}
+
+Input:error {
+  border-color: token(color.error);
+  border-width: 1.5px;
+}

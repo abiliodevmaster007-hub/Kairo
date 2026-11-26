@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kairo — UI declarativa para Java</title>
+    <meta
+      name="description"
+      content="UI declarativa e nativa para Android, em Java. XML para a estrutura, CSS para o estilo, Java para a lógica. As atualizações são incrementais."
+    />
+    <meta property="og:title" content="Kairo — UI declarativa para Java" />
+    <meta
+      property="og:description"
+      content="UI declarativa e nativa para Android, em Java. Early preview v0.1. Android primeiro; iOS em investigação."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('kairo-theme');
+          var root = document.documentElement;
+          if (saved === 'light') {
+            root.classList.remove('dark');
+          } else {
+            root.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-[#09090B] dark:text-zinc-100 antialiased selection:bg-[#4F46E5]/25 selection:text-zinc-900 dark:selection:text-zinc-100">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

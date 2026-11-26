@@ -1,0 +1,33 @@
+rootProject.name = "kairo"
+
+include(
+    ":libraries:kairo-annotations",
+    ":libraries:kairo-core",
+    ":libraries:kairo-ir",
+    ":libraries:kairo-xml",
+    ":libraries:kairo-css-parser",
+    ":libraries:kairo-style",
+    ":libraries:kairo-state",
+    ":libraries:kairo-events",
+    ":libraries:kairo-lifecycle",
+    ":libraries:kairo-layout",
+    ":libraries:kairo-components-api",
+    ":libraries:kairo-components-basic",
+    ":libraries:kairo-components-input",
+    ":libraries:kairo-components-form",
+    ":libraries:kairo-components-list",
+    ":libraries:kairo-navigation",
+    ":libraries:kairo-async",
+    ":libraries:kairo-resources",
+    ":libraries:kairo-renderer-api",
+    ":libraries:kairo-runtime",
+    ":libraries:kairo-renderer-android",
+    ":libraries:kairo-platform-android",
+    ":libraries:kairo-inspector",
+    ":libraries:kairo-testkit",
+    ":tools:kairo-cli",
+    ":tests:architecture-tests",
+    ":tests:runtime-tests",
+    ":examples:login-slice",
+    ":examples:gallery"
+)

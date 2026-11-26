@@ -1,0 +1,17 @@
+<Screen id="galleryIndex" class="gallery">
+  <Column gap="16" padding="24">
+    <Text id="title" class="heading" value="Kairo Gallery v1"/>
+    <Text value="12 categorias de aceitação usando apenas APIs públicas." />
+    <Divider orientation="horizontal"/>
+    <List id="categories" items="{{ categories }}" key="item.id">
+      <template>
+        <Card onClick="openCategory">
+          <Row gap="12" align="center">
+            <Text value="{{ item.title }}"/>
+            <Button onClick="openCategory">Abrir</Button>
+          </Row>
+        </Card>
+      </template>
+    </List>
+  </Column>
+</Screen>

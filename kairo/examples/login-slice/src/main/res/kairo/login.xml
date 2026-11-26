@@ -1,0 +1,11 @@
+<Screen id="login" class="login-page">
+  <Column gap="16" padding="24">
+    <Text id="heading" value="Entrar na conta"/>
+    <Input id="email" bind:value="email" placeholder="Email"/>
+    <Input id="password" bind:value="password" type="password" placeholder="Palavra-passe"/>
+    <Text id="feedback" value="{{ feedback }}"/>
+    <Button id="submit" class="primary" disabled="{{ !canSubmit }}" onClick="submit">
+      Entrar
+    </Button>
+  </Column>
+</Screen>

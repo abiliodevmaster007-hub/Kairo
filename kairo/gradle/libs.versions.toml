@@ -1,0 +1,19 @@
+[versions]
+java = "17"
+junit = "5.11.0"
+assertj = "3.26.3"
+archunit = "1.3.0"
+jacoco = "0.8.12"
+picocli = "4.7.6"
+slf4j = "2.0.16"
+logback = "1.5.12"
+androidCompileSdk = "4.1.1.4"
+
+[libraries]
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+android-sdk = { module = "com.google.android:android", version.ref = "androidCompileSdk" }
