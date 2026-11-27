@@ -59,7 +59,10 @@ public final class SemanticIRValidator {
         for (ComponentDescriptor.PropertyDescriptor prop : descriptor.properties()) {
             boolean hasLiteral = node.properties().containsKey(prop.name());
             boolean hasBinding = node.bindings().containsKey(prop.name());
-            if (prop.required() && !hasLiteral && !hasBinding) {
+            boolean hasStableKey = "key".equals(prop.name())
+                    && node.stableKeyExpr() != null
+                    && !node.stableKeyExpr().isBlank();
+            if (prop.required() && !hasLiteral && !hasBinding && !hasStableKey) {
                 bag.error(
                         "SEM_MISSING_REQUIRED_PROP",
                         "<" + tag + "> requires property '" + prop.name() + "'",
