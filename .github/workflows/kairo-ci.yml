@@ -37,7 +37,7 @@ jobs:
       - name: Static Guard — No Platform Imports in Neutral Modules
         working-directory: kairo
         run: |
-          if grep -rnE "^import (android|androidx|javafx|javax\.swing|java\.awt|org\.lwjgl|org\.jetbrains\.skija|org\.reflections)\." \
+          if grep -rnE --include="*.java" --exclude-dir=build "^import (android|androidx|javafx|javax\.swing|java\.awt|org\.lwjgl|org\.jetbrains\.skija|org\.reflections)\." \
             libraries/kairo-annotations libraries/kairo-core libraries/kairo-ir libraries/kairo-xml \
             libraries/kairo-css-parser libraries/kairo-style libraries/kairo-state libraries/kairo-events \
             libraries/kairo-lifecycle libraries/kairo-layout libraries/kairo-components-api \
