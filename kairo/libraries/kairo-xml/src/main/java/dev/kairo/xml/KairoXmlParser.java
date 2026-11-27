@@ -33,6 +33,7 @@ public final class KairoXmlParser {
 
     private static XMLInputFactory createSecureFactory() {
         XMLInputFactory factory = XMLInputFactory.newInstance();
+        factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
         try {
@@ -102,7 +103,9 @@ public final class KairoXmlParser {
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
                         String attrName = reader.getAttributeLocalName(i);
                         String prefix = reader.getAttributePrefix(i);
-                        String fullAttr = (prefix != null && !prefix.isEmpty()) ? prefix + ":" + attrName : attrName;
+                        String fullAttr = (prefix != null && !prefix.isEmpty() && !attrName.startsWith(prefix + ":"))
+                                ? prefix + ":" + attrName
+                                : attrName;
                         String attrValue = reader.getAttributeValue(i);
 
                         if ("id".equals(fullAttr)) {
@@ -159,6 +162,9 @@ public final class KairoXmlParser {
                         } else {
                             componentImports.put(alias.trim(), component.trim());
                         }
+                        continue;
+                    }
+                    if ("kairo".equals(completed.tag)) {
                         continue;
                     }
 
