@@ -111,13 +111,12 @@ public final class KairoRenderEngine {
             KairoId rootId,
             String componentType,
             Consumer<UIEvent> eventSink) {
+        unmountRoot();
         this.eventSink = eventSink != null ? eventSink : ignored -> {};
         View rootView = viewFactory.createView(rootId, componentType, this.eventSink);
         NodeRecord rec = new NodeRecord(rootId, componentType, rootView);
         nodes.put(rootId, rec);
-        rootContainer.removeAllViews();
         rootContainer.addView(rootView);
-        nativeEngine.clear();
         nativeEngine.setRoot(rootId.value());
         syncVisuals(rec);
         return new AndroidRenderer.AndroidViewHandle(rootId, componentType, rootView);
@@ -293,18 +292,38 @@ public final class KairoRenderEngine {
     }
 
     private void handleRemoveNode(RenderPatch.RemoveNode remove) {
-        NodeRecord rec = nodes.remove(remove.id());
-        viewFactory.cleanupNode(remove.id());
-        if (rec != null) {
-            pendingBounds.remove(rec.view);
-            if (rec.view.getParent() instanceof ViewGroup vg) {
-                if (vg instanceof KairoLayoutHostGroup host) {
-                    host.clearChildBounds(rec.view);
-                }
-                vg.removeView(rec.view);
+        KairoId targetId = remove.id();
+        NodeRecord rec = nodes.get(targetId);
+        if (rec != null && rec.view.getParent() instanceof ViewGroup vg) {
+            if (vg instanceof KairoLayoutHostGroup host) {
+                host.clearChildBounds(rec.view);
+            }
+            vg.removeView(rec.view);
+        }
+        for (NodeRecord parentRec : nodes.values()) {
+            if (parentRec.childIds.remove(targetId)) {
+                syncNativeChildren(parentRec);
             }
         }
-        nativeEngine.removeNode(remove.id().value());
+        removeSubtreeRecords(targetId);
+        nativeEngine.removeNode(targetId.value());
+    }
+
+    private void removeSubtreeRecords(KairoId id) {
+        NodeRecord rec = nodes.remove(id);
+        viewFactory.cleanupNode(id);
+        if (rec != null) {
+            pendingBounds.remove(rec.view);
+            if (rec.view instanceof KairoLayoutHostGroup.KairoScrollView scroll) {
+                scroll.contentHost().removeAllViews();
+            } else if (rec.view instanceof ViewGroup vg) {
+                vg.removeAllViews();
+            }
+            for (KairoId childId : List.copyOf(rec.childIds)) {
+                removeSubtreeRecords(childId);
+            }
+            rec.childIds.clear();
+        }
     }
 
     private ViewGroup resolveChildHost(View parentView) {

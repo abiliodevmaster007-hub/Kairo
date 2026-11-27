@@ -74,4 +74,22 @@ public final class ReactiveRuntimeConfig {
             // Never allow a faulty error handler to disrupt remaining reactive flush delivery.
         }
     }
+
+    static void reportDerivedError(Derived<?> derived, Throwable error) {
+        ReactiveErrorHandler handler = ERROR_HANDLER.get();
+        try {
+            handler.onDerivedError(derived, error);
+        } catch (RuntimeException ignored) {
+            // Best-effort isolation
+        }
+    }
+
+    static void reportTransactionError(Throwable error) {
+        ReactiveErrorHandler handler = ERROR_HANDLER.get();
+        try {
+            handler.onTransactionError(error);
+        } catch (RuntimeException ignored) {
+            // Best-effort isolation
+        }
+    }
 }

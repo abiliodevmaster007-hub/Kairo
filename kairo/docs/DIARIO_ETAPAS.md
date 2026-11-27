@@ -254,3 +254,21 @@ Este documento regista tudo o que foi construído, decidido e verificado em cada
    - `KairoRuntime` instrumenta `mount()` e `recompute()`, expondo `lastMetrics()` e `metricsHistory()`.
    - `TreeInspector` expõe `dumpPerformanceReport(KairoRuntime)` e inclui o bloco `Runtime Performance:` em `dumpSnapshot(...)`, verificado em `RuntimeMetricsTest.java`.
 
+---
+
+## Kairo Core Stability (Etapas C1–C4) [CONCLUÍDA]
+
+### O que foi endurecido no núcleo reativo, reconciliação e renderização
+1. **Etapa C1 — Lifecycle Dinâmico de Root, `Remount` Seguro & `RemoveNode` Recursivo**
+   - Formalizado o contrato recursivo de `RenderPatch.RemoveNode` em `Renderer.java` e implementado em cadeia completa no `FakeRenderer`, `KairoRenderEngine` Android (limpando descendentes, vistas, `pendingBounds`, `viewFactory` e filhos do pai) e `KairoSceneGraph` nativo C++ (`removeNodeRecursive` + desanexação do pai).
+   - `KairoRuntime` suporta agora *remount* idempotente (executando `unmount()` prévio antes de remontar) e gere dinamicamente todas as transições de *root* (`null <-> ativo`, substituição de tipo/identidade de *root* e `null -> null`) via `mountedRootId`.
+2. **Etapa C2 — `Derived` Resiliente, Batching Unificado & `ReactiveErrorHandler`**
+   - Implementada estratégia **compute-before-replace** em `Derived`: dependências antigas só são substituídas após computação válida, mantendo o grafo reativo vivo e recuperável em falhas transitórias e detetando ciclos também durante propagação e transações (`ACTIVE_PROPAGATION` + `derivedFlushCounts`).
+   - `State.set()` fora de transação manual utiliza *batching* implícito sem glitches para grafos em diamante, e `ReactiveErrorHandler` ganhou ganchos específicos `onDerivedError` e `onTransactionError`.
+3. **Etapa C3 — `Reconciler` `O(1)`, Evicção de Identidades Estáveis & Limpeza de Eventos**
+   - `Reconciler` atualizado para pesquisa `O(1)` por `StableKey` e `logicalId` com mapa de índices de trabalho (`workingIndexById`) e caminho rápido alinhado.
+   - `KairoRuntime` passa a gerir ciclo de vida de identidades (`Active -> Inactive -> Grace Window -> Evicted`), limpando estados `:pressed`/`:focused`/`:hovered` e podando ouvintes em `EventDispatcher` quando identidades expiram.
+4. **Etapa C4 — Suite de Regressão Core & Benchmarks de Escala**
+   - Criados `FakeRendererSubtreeTest`, `DerivedResilienceTest`, `CoreStabilityTest` (transições de *root*, *remount*, eliminação recursiva, evicção de identidades e eventos após reordenação) e `ReconcilerScaleBenchmarkTest` (10 a 10.000 nós com chaves estáveis).
+
+

@@ -63,7 +63,20 @@ public final class KairoRuntime {
     private final TwoWayLoopGuard twoWayGuard = new TwoWayLoopGuard();
     private final EventDispatcher eventDispatcher = new EventDispatcher();
 
-    private final Map<String, KairoId> stableNodeIds = new LinkedHashMap<>();
+    private static final int DEFAULT_IDENTITY_GRACE_FRAMES = 8;
+
+    private static final class IdentityEntry {
+        final KairoId id;
+        long lastSeenGeneration;
+        int inactiveFrames;
+
+        IdentityEntry(KairoId id, long lastSeenGeneration) {
+            this.id = id;
+            this.lastSeenGeneration = lastSeenGeneration;
+        }
+    }
+
+    private final Map<String, IdentityEntry> stableNodeIds = new LinkedHashMap<>();
     private final Map<KairoId, VirtualNode> nodeIndex = new LinkedHashMap<>();
     private final Map<KairoId, KairoId> parentByNode = new LinkedHashMap<>();
     private final Map<KairoId, StyleResolutionResult> styleTraces = new LinkedHashMap<>();
@@ -77,10 +90,13 @@ public final class KairoRuntime {
     private LayoutConstraints viewport = LayoutConstraints.fixed(390, 844);
     private ViewportCapabilities viewportCapabilities = ViewportCapabilities.DEFAULT;
     private VirtualNode currentTree;
+    private KairoId mountedRootId;
     private LayoutEngine.LayoutResult lastLayoutResult;
     private RuntimeMetrics lastMetrics = RuntimeMetrics.ZERO;
     private final List<List<RenderPatch>> patchHistory = new ArrayList<>();
     private final List<RuntimeMetrics> metricsHistory = new ArrayList<>();
+    private long renderGeneration = 0L;
+    private int identityGraceFrames = DEFAULT_IDENTITY_GRACE_FRAMES;
     private long activeStyleNanos;
     private long activeLayoutNanos;
     private long activeTreeBuildNanos;
@@ -98,7 +114,26 @@ public final class KairoRuntime {
         return lifecycleScope;
     }
 
+    public void setIdentityGraceFrames(int graceFrames) {
+        this.identityGraceFrames = Math.max(0, graceFrames);
+    }
+
+    public int identityGraceFrames() {
+        return identityGraceFrames;
+    }
+
+    public int retainedIdentityCount() {
+        return stableNodeIds.size();
+    }
+
+    public int listenerCount(KairoId nodeId) {
+        return eventDispatcher.listenerCount(nodeId);
+    }
+
     public void mount(NodeIR rootIR, CssStylesheet stylesheet, ScreenModel model, LayoutConstraints viewport) {
+        if (lifecycleScope.isMounted() || currentTree != null || mountedRootId != null) {
+            unmount();
+        }
         this.rootIR = rootIR;
         this.stylesheet = stylesheet;
         this.model = model;
@@ -118,8 +153,11 @@ public final class KairoRuntime {
             reconcileNanos = System.nanoTime() - recStart;
             long applyStart = System.nanoTime();
             renderer.mountRoot(initial.id(), initial.componentType(), this::dispatchEvent);
+            mountedRootId = initial.id();
             applyPatches(patches);
             patchNanos = System.nanoTime() - applyStart;
+        } else {
+            mountedRootId = null;
         }
         long totalNanos = System.nanoTime() - frameStart;
         recordMetrics(reconcileNanos, patchNanos, totalNanos, patches);
@@ -172,16 +210,45 @@ public final class KairoRuntime {
             do {
                 recomputeQueued = false;
                 long frameStart = System.nanoTime();
+                VirtualNode prev = this.currentTree;
                 VirtualNode next = buildAndLayoutTree();
                 long recStart = System.nanoTime();
-                List<RenderPatch> patches = reconciler.diff(currentTree, next);
+                List<RenderPatch> patches = reconciler.diff(prev, next);
                 long reconcileNanos = System.nanoTime() - recStart;
                 long patchNanos = 0L;
-                if (!patches.isEmpty()) {
+
+                if (prev == null && next != null) {
+                    long applyStart = System.nanoTime();
+                    renderer.mountRoot(next.id(), next.componentType(), this::dispatchEvent);
+                    mountedRootId = next.id();
+                    applyPatches(patches);
+                    patchNanos = System.nanoTime() - applyStart;
+                } else if (prev != null && next == null) {
+                    long applyStart = System.nanoTime();
+                    if (!patches.isEmpty()) {
+                        applyPatches(patches);
+                    }
+                    if (mountedRootId != null) {
+                        renderer.unmountRoot(mountedRootId);
+                        mountedRootId = null;
+                    }
+                    patchNanos = System.nanoTime() - applyStart;
+                } else if (prev != null && next != null
+                        && (!Objects.equals(prev.id(), next.id()) || !prev.componentType().equals(next.componentType()))) {
+                    long applyStart = System.nanoTime();
+                    if (mountedRootId != null) {
+                        renderer.unmountRoot(mountedRootId);
+                    }
+                    renderer.mountRoot(next.id(), next.componentType(), this::dispatchEvent);
+                    mountedRootId = next.id();
+                    applyPatches(patches);
+                    patchNanos = System.nanoTime() - applyStart;
+                } else if (!patches.isEmpty()) {
                     long applyStart = System.nanoTime();
                     applyPatches(patches);
                     patchNanos = System.nanoTime() - applyStart;
                 }
+
                 long totalNanos = System.nanoTime() - frameStart;
                 recordMetrics(reconcileNanos, patchNanos, totalNanos, patches);
                 this.currentTree = next;
@@ -192,7 +259,10 @@ public final class KairoRuntime {
     }
 
     public void unmount() {
-        if (currentTree != null) {
+        if (mountedRootId != null) {
+            renderer.unmountRoot(mountedRootId);
+            mountedRootId = null;
+        } else if (currentTree != null) {
             renderer.unmountRoot(currentTree.id());
         }
         for (KairoId id : new ArrayList<>(nodeIndex.keySet())) {
@@ -326,9 +396,11 @@ public final class KairoRuntime {
     }
 
     private VirtualNode buildAndLayoutTree() {
+        Set<KairoId> previousActiveIds = new HashSet<>(nodeIndex.keySet());
         nodeIndex.clear();
         parentByNode.clear();
         styleTraces.clear();
+        renderGeneration++;
         activeStyleNanos = 0L;
         activeLayoutNanos = 0L;
         activeTreeBuildNanos = 0L;
@@ -340,6 +412,7 @@ public final class KairoRuntime {
         long buildEnd = System.nanoTime();
         activeTreeBuildNanos = Math.max(0L, (buildEnd - buildStart) - activeStyleNanos);
         activeNodesRebuilt = nodeIndex.size();
+        evictExpiredIdentitiesAndCleanState(previousActiveIds);
         if (built == null) {
             return null;
         }
@@ -352,6 +425,31 @@ public final class KairoRuntime {
         activeLayoutNanos = Math.max(0L, System.nanoTime() - layoutStart);
         activeLayoutNodesProcessed = layoutResult.boundsByNode().size();
         return built;
+    }
+
+    private void evictExpiredIdentitiesAndCleanState(Set<KairoId> previousActiveIds) {
+        for (KairoId prevId : previousActiveIds) {
+            if (!nodeIndex.containsKey(prevId)) {
+                pressedNodeIds.remove(prevId);
+                if (Objects.equals(focusedNodeId, prevId)) {
+                    focusedNodeId = null;
+                }
+                if (Objects.equals(hoveredNodeId, prevId)) {
+                    hoveredNodeId = null;
+                }
+            }
+        }
+        var it = stableNodeIds.entrySet().iterator();
+        while (it.hasNext()) {
+            IdentityEntry entry = it.next().getValue();
+            if (entry.lastSeenGeneration != renderGeneration) {
+                entry.inactiveFrames++;
+                if (entry.inactiveFrames > identityGraceFrames) {
+                    eventDispatcher.clearListeners(entry.id);
+                    it.remove();
+                }
+            }
+        }
     }
 
     private void recordMetrics(long reconcileNanos, long patchNanos, long totalNanos, List<RenderPatch> patches) {
@@ -388,7 +486,15 @@ public final class KairoRuntime {
         String idKey = stableKey != null
                 ? "key:" + ir.componentType() + ":" + stableKey.value()
                 : (ir.logicalId() != null ? "id:" + ir.logicalId() : "path:" + pathKey);
-        KairoId id = stableNodeIds.computeIfAbsent(idKey, ignored -> KairoId.next(ir.logicalId()));
+        IdentityEntry idEntry = stableNodeIds.get(idKey);
+        if (idEntry == null) {
+            idEntry = new IdentityEntry(KairoId.next(ir.logicalId()), renderGeneration);
+            stableNodeIds.put(idKey, idEntry);
+        } else {
+            idEntry.lastSeenGeneration = renderGeneration;
+            idEntry.inactiveFrames = 0;
+        }
+        KairoId id = idEntry.id;
 
         Map<String, String> props = new LinkedHashMap<>();
         registry.find(ir.componentType()).ifPresent(desc -> props.putAll(desc.defaultProperties()));

@@ -161,9 +161,28 @@ void KairoSceneGraph::setChildren(int64_t parentId, const int64_t* childIds, int
 }
 
 void KairoSceneGraph::removeNode(int64_t id) {
-    nodes_.erase(id);
+    for (auto& [parentId, parentNode] : nodes_) {
+        auto& children = parentNode.children;
+        children.erase(std::remove(children.begin(), children.end(), id), children.end());
+    }
+    removeNodeRecursive(id);
+}
+
+void KairoSceneGraph::removeNodeRecursive(int64_t id) {
+    auto it = nodes_.find(id);
+    if (it == nodes_.end()) {
+        if (root_id_ == id) {
+            root_id_ = -1;
+        }
+        return;
+    }
+    std::vector<int64_t> childrenCopy = std::move(it->second.children);
+    nodes_.erase(it);
     if (root_id_ == id) {
         root_id_ = -1;
+    }
+    for (int64_t childId : childrenCopy) {
+        removeNodeRecursive(childId);
     }
 }
 

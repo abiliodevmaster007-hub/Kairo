@@ -85,6 +85,8 @@ private:
         int32_t stridePixels
     ) const;
 
+    void removeNodeRecursive(int64_t id);
+
     int64_t hitTestRecursive(int64_t nodeId, float localX, float localY, float offsetX, float offsetY) const;
 
     int64_t root_id_ = -1;

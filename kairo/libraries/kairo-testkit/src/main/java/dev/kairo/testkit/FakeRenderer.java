@@ -60,7 +60,8 @@ public final class FakeRenderer implements Renderer {
 
     @Override
     public RenderHandle mountRoot(KairoId rootId, String componentType, Consumer<UIEvent> eventSink) {
-        this.eventSink = eventSink;
+        this.eventSink = eventSink != null ? eventSink : ignored -> {};
+        nodes.clear();
         FakeNode root = new FakeNode(rootId, componentType, Map.of(), ComputedStyle.empty());
         nodes.put(rootId, root);
         return root;
@@ -105,11 +106,21 @@ public final class FakeRenderer implements Renderer {
                     parent.childOrder.add(idx, move.childId());
                 }
             } else if (patch instanceof RenderPatch.RemoveNode remove) {
-                nodes.remove(remove.id());
-                for (FakeNode node : nodes.values()) {
-                    node.childOrder.remove(remove.id());
-                }
+                removeSubtree(remove.id());
             }
+        }
+    }
+
+    private void removeSubtree(KairoId id) {
+        FakeNode removed = nodes.remove(id);
+        if (removed != null) {
+            for (KairoId childId : List.copyOf(removed.childOrder)) {
+                removeSubtree(childId);
+            }
+            removed.childOrder.clear();
+        }
+        for (FakeNode node : nodes.values()) {
+            node.childOrder.remove(id);
         }
     }
 

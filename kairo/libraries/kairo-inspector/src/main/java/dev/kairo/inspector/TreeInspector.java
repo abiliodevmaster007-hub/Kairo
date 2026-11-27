@@ -109,7 +109,8 @@ public final class TreeInspector {
         StringBuilder sb = new StringBuilder();
         sb.append("=== Kairo Inspector Snapshot ===\n");
         sb.append("theme=").append(runtime.activeTheme())
-                .append(" totalPatches=").append(totalPatchCount(runtime));
+                .append(" totalPatches=").append(totalPatchCount(runtime))
+                .append(" retainedIdentities=").append(runtime.retainedIdentityCount());
         if (renderer != null) {
             RenderEngineStats stats = renderer.engineStats();
             sb.append(" backend=").append(stats.backendName())

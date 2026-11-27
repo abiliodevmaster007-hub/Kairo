@@ -42,6 +42,12 @@ public final class EventDispatcher {
         bubbleListeners.remove(nodeId);
     }
 
+    public int listenerCount(KairoId nodeId) {
+        List<ListenerEntry<?>> cap = captureListeners.get(nodeId);
+        List<ListenerEntry<?>> bub = bubbleListeners.get(nodeId);
+        return (cap != null ? cap.size() : 0) + (bub != null ? bub.size() : 0);
+    }
+
     public void dispatch(UIEvent event, List<KairoId> pathFromRootToTarget) {
         if (pathFromRootToTarget == null || pathFromRootToTarget.isEmpty()) {
             return;

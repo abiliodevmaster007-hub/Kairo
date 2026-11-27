@@ -9,7 +9,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Contract implemented by AndroidRenderer (v1) and FakeRenderer (testkit) or SkiaRenderer (v2).
+ * Contract implemented by AndroidRenderer (v1), FakeRenderer (testkit), or SkiaRenderer (v2).
+ * Implementations must guarantee recursive subtree cleanup whenever a {@link RenderPatch.RemoveNode}
+ * is applied, and support repeated {@link #mountRoot}/{@link #unmountRoot} transitions cleanly.
  */
 public interface Renderer {
     record Capabilities(

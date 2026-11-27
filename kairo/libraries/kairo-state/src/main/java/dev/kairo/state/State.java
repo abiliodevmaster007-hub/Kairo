@@ -33,6 +33,7 @@ public final class State<T> implements ReactiveSource {
         final Set<State<?>> dirtyStates = new LinkedHashSet<>();
         final Set<Derived<?>> dirtyDeriveds = new LinkedHashSet<>();
         final Map<Object, Runnable> coalescedCallbacks = new LinkedHashMap<>();
+        final Map<Derived<?>, Integer> derivedFlushCounts = new IdentityHashMap<>();
         boolean flushing;
 
         void scheduleDerived(Derived<?> derived) {
@@ -92,7 +93,17 @@ public final class State<T> implements ReactiveSource {
             tx.dirtyStates.add(this);
             return;
         }
-        notifyImmediate();
+        TransactionBuffer implicit = new TransactionBuffer();
+        implicit.dirtyStates.add(this);
+        ACTIVE_TRANSACTION.set(implicit);
+        try {
+            flushTransaction(implicit);
+        } catch (RuntimeException ex) {
+            ReactiveRuntimeConfig.reportTransactionError(ex);
+            throw ex;
+        } finally {
+            ACTIVE_TRANSACTION.remove();
+        }
     }
 
     public void update(UnaryOperator<T> updater) {
@@ -119,20 +130,6 @@ public final class State<T> implements ReactiveSource {
             derivedDependents.add(dependent);
         }
         return () -> derivedDependents.remove(dependent);
-    }
-
-    private void notifyImmediate() {
-        for (Derived<?> dependent : derivedDependents) {
-            dependent.onDependencyChanged();
-        }
-        T snapshot = this.value;
-        for (Consumer<T> listener : listeners) {
-            try {
-                listener.accept(snapshot);
-            } catch (RuntimeException ex) {
-                ReactiveRuntimeConfig.reportListenerError("State.listener", ex);
-            }
-        }
     }
 
     private void flushToBuffer(TransactionBuffer tx) {
@@ -197,6 +194,9 @@ public final class State<T> implements ReactiveSource {
         try {
             block.run();
             flushTransaction(tx);
+        } catch (RuntimeException ex) {
+            ReactiveRuntimeConfig.reportTransactionError(ex);
+            throw ex;
         } finally {
             ACTIVE_TRANSACTION.remove();
         }
@@ -224,6 +224,11 @@ public final class State<T> implements ReactiveSource {
                     Set<Derived<?>> seen = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
                     for (Derived<?> derived : derivedBatch) {
                         if (seen.add(derived)) {
+                            int count = tx.derivedFlushCounts.getOrDefault(derived, 0) + 1;
+                            if (count > 32) {
+                                throw new IllegalStateException("Cyclic Derived dependency detected during transaction flush");
+                            }
+                            tx.derivedFlushCounts.put(derived, count);
                             derived.flushInTransaction(tx);
                         }
                     }

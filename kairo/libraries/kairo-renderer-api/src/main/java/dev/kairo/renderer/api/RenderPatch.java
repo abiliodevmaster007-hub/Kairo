@@ -19,5 +19,10 @@ public sealed interface RenderPatch {
     record UpdateVisualStates(KairoId id, Set<VisualState> states) implements RenderPatch {}
     record InsertChild(KairoId parentId, KairoId childId, int index) implements RenderPatch {}
     record MoveChild(KairoId parentId, KairoId childId, int fromIndex, int toIndex) implements RenderPatch {}
+
+    /**
+     * Removes the target node and recursively destroys its entire descendant subtree,
+     * native views/records, and associated UI/accessibility resources in the Renderer.
+     */
     record RemoveNode(KairoId id) implements RenderPatch {}
 }

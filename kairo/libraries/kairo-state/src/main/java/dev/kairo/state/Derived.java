@@ -18,6 +18,8 @@ import java.util.function.Supplier;
 public final class Derived<T> implements Disposable, ReactiveSource {
     private static final ThreadLocal<Set<Derived<?>>> ACTIVE_COMPUTATIONS =
             ThreadLocal.withInitial(LinkedHashSet::new);
+    private static final ThreadLocal<Set<Derived<?>>> ACTIVE_PROPAGATION =
+            ThreadLocal.withInitial(LinkedHashSet::new);
 
     private final Supplier<T> computer;
     private final CopyOnWriteArrayList<Consumer<T>> listeners = new CopyOnWriteArrayList<>();
@@ -87,8 +89,19 @@ public final class Derived<T> implements Disposable, ReactiveSource {
     private void recompute(boolean notify) {
         boolean changed = recomputeInternal();
         if (notify && changed) {
-            for (Derived<?> child : derivedDependents) {
-                child.onDependencyChanged();
+            Set<Derived<?>> propagating = ACTIVE_PROPAGATION.get();
+            if (!propagating.add(this)) {
+                throw new IllegalStateException("Cyclic Derived dependency detected");
+            }
+            try {
+                for (Derived<?> child : derivedDependents) {
+                    child.onDependencyChanged();
+                }
+            } finally {
+                propagating.remove(this);
+                if (propagating.isEmpty()) {
+                    ACTIVE_PROPAGATION.remove();
+                }
             }
             T snapshot = this.cachedValue;
             for (Consumer<T> listener : listeners) {
@@ -109,16 +122,23 @@ public final class Derived<T> implements Disposable, ReactiveSource {
                 throw new IllegalStateException("Cyclic Derived dependency detected");
             }
             try {
-                disposeDepSubscriptions();
                 State.beginTracking();
                 T nextValue;
                 Set<ReactiveSource> deps;
                 try {
                     nextValue = computer.get();
+                } catch (RuntimeException ex) {
+                    if (!initialized || isCyclicException(ex)) {
+                        throw ex;
+                    }
+                    ReactiveRuntimeConfig.reportDerivedError(this, ex);
+                    return false;
                 } finally {
                     deps = State.endTracking();
                 }
 
+                // Compute-before-replace: only discard old subscriptions once the new value succeeded.
+                disposeDepSubscriptions();
                 for (ReactiveSource dep : deps) {
                     if (dep instanceof State<?> st) {
                         depSubscriptions.add(st.subscribeDerived(this));
@@ -140,6 +160,12 @@ public final class Derived<T> implements Disposable, ReactiveSource {
                 }
             }
         }
+    }
+
+    private static boolean isCyclicException(RuntimeException ex) {
+        return ex instanceof IllegalStateException
+                && ex.getMessage() != null
+                && ex.getMessage().contains("Cyclic Derived");
     }
 
     private void disposeDepSubscriptions() {
