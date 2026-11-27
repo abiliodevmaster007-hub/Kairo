@@ -77,7 +77,7 @@ public final class ProjectInspector {
                     xmlCount++;
                     String content = Files.readString(file, StandardCharsets.UTF_8);
                     IRDocument doc = xmlParser.parseDocument(projectDir.relativize(file).toString(), content);
-                    Diagnostic.Bag irBag = irValidator.validate(doc);
+                    Diagnostic.Bag irBag = doc.root() != null ? irValidator.validate(doc.root()) : doc.diagnostics();
                     Diagnostic.Bag semBag = semanticValidator.validate(doc, registry);
                     allDiagnostics.addAll(irBag.all());
                     semBag.all().forEach(d -> {
