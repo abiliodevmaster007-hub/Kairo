@@ -7,7 +7,6 @@ import dev.kairo.components.form.FormController;
 import dev.kairo.components.input.InputComponents;
 import dev.kairo.components.list.KairoListDiff;
 import dev.kairo.core.Diagnostic;
-import dev.kairo.css.CssStylesheet;
 import dev.kairo.css.KairoCssParser;
 import dev.kairo.ir.IRDocument;
 import dev.kairo.ir.IRValidator;
@@ -90,7 +89,7 @@ public final class ProjectInspector {
                         || (pathStr.endsWith(".css") && pathStr.contains("/kairo/"))) {
                     cssCount++;
                     String content = Files.readString(file, StandardCharsets.UTF_8);
-                    CssStylesheet parsed = cssParser.parseWithDiagnostics(
+                    KairoCssParser.ParseResult parsed = cssParser.parseWithDiagnostics(
                             projectDir.relativize(file).toString(),
                             content
                     );

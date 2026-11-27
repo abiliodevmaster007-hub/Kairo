@@ -31,6 +31,10 @@ public final class CssStylesheet {
     private final Map<String, Map<String, String>> namedThemes;
     private final List<Rule> rules;
 
+    public static CssStylesheet empty() {
+        return new CssStylesheet(List.of(), Map.of(), Map.of(), List.of());
+    }
+
     public CssStylesheet(Map<String, String> tokens, List<Rule> rules) {
         this(List.of(), tokens, Map.of(), rules);
     }

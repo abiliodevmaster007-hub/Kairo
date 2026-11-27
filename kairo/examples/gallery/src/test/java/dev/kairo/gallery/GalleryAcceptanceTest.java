@@ -54,8 +54,9 @@ final class GalleryAcceptanceTest {
         Diagnostic.Bag semDiagnostics = new SemanticIRValidator().validate(doc, registry);
         assertThat(semDiagnostics.hasErrors()).isFalse();
 
-        CssStylesheet stylesheet = new KairoCssParser().parse(galleryCss);
-        assertThat(stylesheet.diagnostics().hasErrors()).isFalse();
+        KairoCssParser.ParseResult cssResult = new KairoCssParser().parseWithDiagnostics("gallery.css", galleryCss);
+        assertThat(cssResult.diagnostics().hasErrors()).isFalse();
+        CssStylesheet stylesheet = cssResult.stylesheet();
 
         // Compose full multi-category gallery screen using pure Java BasicUI DSL
         NodeIR screenTree = BasicUI.screen("galleryRoot")
