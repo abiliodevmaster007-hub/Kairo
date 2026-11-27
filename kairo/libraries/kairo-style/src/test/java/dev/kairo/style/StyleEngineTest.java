@@ -129,7 +129,7 @@ final class StyleEngineTest {
         assertThat(dark.style().get("color")).isEqualTo("#E4E4E7");
         assertThat(dark.style().get("border-color")).isEqualTo("#888888");
         assertThat(dark.diagnostics().hasErrors()).isTrue();
-        assertThat(dark.diagnostics().items()).anyMatch(d -> "STYLE_TOKEN_CYCLE".equals(d.code()));
+        assertThat(dark.diagnostics().all()).anyMatch(d -> "STYLE_TOKEN_CYCLE".equals(d.code()));
 
         registry.setActiveTheme("light");
         StyleResolutionResult light = styleEngine.resolveWithTrace(

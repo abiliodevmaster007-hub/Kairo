@@ -171,6 +171,8 @@ final class StateConcurrencyAndIsolationTest {
         assertThat(healthyLog).containsExactly(3, 5, 7);
         assertThat(derivedHealthyLog).containsExactly(6, 10, 14);
 
+        doubled.dispose();
+
         // Explicit cycle protection remains strict
         assertThatThrownBy(() -> State.transaction(new Runnable() {
             @Override
@@ -182,7 +184,5 @@ final class StateConcurrencyAndIsolationTest {
             }
         })).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("maximum flush rounds");
-
-        doubled.dispose();
     }
 }
