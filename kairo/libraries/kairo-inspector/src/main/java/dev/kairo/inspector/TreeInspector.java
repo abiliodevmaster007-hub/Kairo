@@ -5,6 +5,7 @@ import dev.kairo.renderer.api.RenderEngineStats;
 import dev.kairo.renderer.api.RenderPatch;
 import dev.kairo.renderer.api.Renderer;
 import dev.kairo.runtime.KairoRuntime;
+import dev.kairo.runtime.RuntimeMetrics;
 import dev.kairo.runtime.VirtualNode;
 import dev.kairo.state.Derived;
 import dev.kairo.state.State;
@@ -12,6 +13,7 @@ import dev.kairo.style.StyleResolutionResult;
 import dev.kairo.style.StyleTrace;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -66,6 +68,43 @@ public final class TreeInspector {
         return sb.toString();
     }
 
+    public String dumpPerformanceReport(KairoRuntime runtime) {
+        if (runtime == null) return "<no runtime>";
+        RuntimeMetrics m = runtime.lastMetrics();
+        return String.format(
+                Locale.US,
+                """
+                Runtime Performance:
+                  Tree construction:      %.3f ms
+                  Style resolution:       %.3f ms
+                  Layout:                 %.3f ms
+                  Reconciliation:         %.3f ms
+                  Patch application:      %.3f ms
+                  Total:                  %.3f ms
+                  Nodes rebuilt:          %d
+                  Nodes created:          %d
+                  Nodes changed:          %d
+                  Nodes moved:            %d
+                  Nodes removed:          %d
+                  Layout nodes processed: %d
+                  Render patches:         %d
+                """,
+                m.treeConstructionMillis(),
+                m.styleResolutionMillis(),
+                m.layoutMillis(),
+                m.reconciliationMillis(),
+                m.patchApplicationMillis(),
+                m.totalMillis(),
+                m.nodesRebuilt(),
+                m.nodesCreated(),
+                m.nodesChanged(),
+                m.nodesMoved(),
+                m.nodesRemoved(),
+                m.layoutNodesProcessed(),
+                m.patchesEmitted()
+        );
+    }
+
     public String dumpSnapshot(KairoRuntime runtime, KairoRuntime.ScreenModel model, Renderer renderer) {
         StringBuilder sb = new StringBuilder();
         sb.append("=== Kairo Inspector Snapshot ===\n");
@@ -78,6 +117,7 @@ public final class TreeInspector {
                     .append(" mountedNodes=").append(stats.mountedNodes());
         }
         sb.append('\n');
+        sb.append(dumpPerformanceReport(runtime));
         sb.append(dumpTree(runtime));
         if (model != null) {
             sb.append(dumpBindings(model));

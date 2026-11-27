@@ -22,6 +22,7 @@ public final class ObservableList<T> implements ReactiveSource {
         record ReplacedAll<T>(List<T> previous, List<T> current) implements Mutation<T> {}
     }
 
+    private final Object lock = new Object();
     private final List<T> items = new ArrayList<>();
     private final CopyOnWriteArrayList<Consumer<Mutation<T>>> listeners = new CopyOnWriteArrayList<>();
 
@@ -37,67 +38,122 @@ public final class ObservableList<T> implements ReactiveSource {
 
     public List<T> snapshot() {
         State.recordRead(this);
-        return Collections.unmodifiableList(new ArrayList<>(items));
+        synchronized (lock) {
+            return Collections.unmodifiableList(new ArrayList<>(items));
+        }
     }
 
     public int size() {
         State.recordRead(this);
-        return items.size();
+        synchronized (lock) {
+            return items.size();
+        }
     }
 
     public boolean isEmpty() {
         State.recordRead(this);
-        return items.isEmpty();
+        synchronized (lock) {
+            return items.isEmpty();
+        }
     }
 
     public T get(int index) {
         State.recordRead(this);
-        return items.get(index);
+        synchronized (lock) {
+            return items.get(index);
+        }
     }
 
     public void add(T item) {
-        int index = items.size();
-        items.add(item);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> add(item), "ObservableList.add")) {
+            return;
+        }
+        int index;
+        synchronized (lock) {
+            index = items.size();
+            items.add(item);
+        }
         emit(new Mutation.Added<>(index, item));
     }
 
     public void add(int index, T item) {
-        items.add(index, item);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> add(index, item), "ObservableList.add")) {
+            return;
+        }
+        synchronized (lock) {
+            items.add(index, item);
+        }
         emit(new Mutation.Added<>(index, item));
     }
 
     public void removeAt(int index) {
-        T removed = items.remove(index);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> removeAt(index), "ObservableList.removeAt")) {
+            return;
+        }
+        T removed;
+        synchronized (lock) {
+            removed = items.remove(index);
+        }
         emit(new Mutation.Removed<>(index, removed));
     }
 
     public boolean remove(T item) {
-        int idx = items.indexOf(item);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> remove(item), "ObservableList.remove")) {
+            return false;
+        }
+        int idx;
+        synchronized (lock) {
+            idx = items.indexOf(item);
+        }
         if (idx < 0) return false;
         removeAt(idx);
         return true;
     }
 
     public void update(int index, T newItem) {
-        T prev = items.set(index, newItem);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> update(index, newItem), "ObservableList.update")) {
+            return;
+        }
+        T prev;
+        synchronized (lock) {
+            prev = items.set(index, newItem);
+        }
         emit(new Mutation.Updated<>(index, prev, newItem));
     }
 
     public void move(int fromIndex, int toIndex) {
-        T item = items.remove(fromIndex);
-        items.add(toIndex, item);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> move(fromIndex, toIndex), "ObservableList.move")) {
+            return;
+        }
+        T item;
+        synchronized (lock) {
+            item = items.remove(fromIndex);
+            items.add(toIndex, item);
+        }
         emit(new Mutation.Moved<>(fromIndex, toIndex, item));
     }
 
     public void setAll(List<T> nextItems) {
-        List<T> previous = List.copyOf(items);
-        items.clear();
-        items.addAll(nextItems);
-        emit(new Mutation.ReplacedAll<>(previous, List.copyOf(items)));
+        List<T> safeNext = List.copyOf(nextItems);
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> setAll(safeNext), "ObservableList.setAll")) {
+            return;
+        }
+        List<T> previous;
+        synchronized (lock) {
+            previous = List.copyOf(items);
+            items.clear();
+            items.addAll(safeNext);
+        }
+        emit(new Mutation.ReplacedAll<>(previous, safeNext));
     }
 
     public void clear() {
-        items.clear();
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(this::clear, "ObservableList.clear")) {
+            return;
+        }
+        synchronized (lock) {
+            items.clear();
+        }
         emit(new Mutation.Cleared<>());
     }
 
@@ -120,7 +176,11 @@ public final class ObservableList<T> implements ReactiveSource {
             return;
         }
         for (Consumer<Mutation<T>> listener : listeners) {
-            listener.accept(mutation);
+            try {
+                listener.accept(mutation);
+            } catch (RuntimeException ex) {
+                ReactiveRuntimeConfig.reportListenerError("ObservableList.listener", ex);
+            }
         }
     }
 }

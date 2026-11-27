@@ -21,27 +21,30 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.10.2
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
 
       - name: Run Architecture Boundary Tests (ArchUnit)
         working-directory: kairo
-        run: ./gradlew :tests:architecture-tests:test --no-daemon
+        run: gradle :tests:architecture-tests:test --no-daemon
 
       - name: Run Full Test Suite & JaCoCo Coverage
         working-directory: kairo
-        run: ./gradlew check jacocoTestReport --no-daemon
+        run: gradle check jacocoTestReport --no-daemon
 
       - name: Static Guard — No Platform Imports in Neutral Modules
         working-directory: kairo
         run: |
-          if grep -rnE "import (android|androidx|javafx|javax\.swing|java\.awt|org\.lwjgl|org\.jetbrains\.skija)\." \
+          if grep -rnE "^import (android|androidx|javafx|javax\.swing|java\.awt|org\.lwjgl|org\.jetbrains\.skija|org\.reflections)\." \
             libraries/kairo-annotations libraries/kairo-core libraries/kairo-ir libraries/kairo-xml \
             libraries/kairo-css-parser libraries/kairo-style libraries/kairo-state libraries/kairo-events \
             libraries/kairo-lifecycle libraries/kairo-layout libraries/kairo-components-api \
             libraries/kairo-components-basic libraries/kairo-components-input libraries/kairo-components-form \
             libraries/kairo-components-list libraries/kairo-navigation libraries/kairo-async \
-            libraries/kairo-resources libraries/kairo-renderer-api libraries/kairo-runtime; then
+            libraries/kairo-resources libraries/kairo-renderer-api libraries/kairo-runtime \
+            libraries/kairo-inspector libraries/kairo-testkit tools/kairo-cli examples/gallery; then
             echo "ERROR: Forbidden platform import detected in neutral module!"
             exit 1
           fi

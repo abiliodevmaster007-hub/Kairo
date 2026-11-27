@@ -58,7 +58,7 @@ public final class State<T> implements ReactiveSource {
         }
     }
 
-    private T value;
+    private volatile T value;
     private final CopyOnWriteArrayList<Consumer<T>> listeners = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Derived<?>> derivedDependents = new CopyOnWriteArrayList<>();
 
@@ -80,6 +80,9 @@ public final class State<T> implements ReactiveSource {
     }
 
     public void set(T nextValue) {
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> set(nextValue), "State.set")) {
+            return;
+        }
         if (Objects.equals(this.value, nextValue)) {
             return;
         }
@@ -93,6 +96,10 @@ public final class State<T> implements ReactiveSource {
     }
 
     public void update(UnaryOperator<T> updater) {
+        Objects.requireNonNull(updater, "updater cannot be null");
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> update(updater), "State.update")) {
+            return;
+        }
         set(updater.apply(value));
     }
 
@@ -120,7 +127,11 @@ public final class State<T> implements ReactiveSource {
         }
         T snapshot = this.value;
         for (Consumer<T> listener : listeners) {
-            listener.accept(snapshot);
+            try {
+                listener.accept(snapshot);
+            } catch (RuntimeException ex) {
+                ReactiveRuntimeConfig.reportListenerError("State.listener", ex);
+            }
         }
     }
 
@@ -173,6 +184,10 @@ public final class State<T> implements ReactiveSource {
     }
 
     public static void transaction(Runnable block) {
+        Objects.requireNonNull(block, "block cannot be null");
+        if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> transaction(block), "State.transaction")) {
+            return;
+        }
         if (ACTIVE_TRANSACTION.get() != null) {
             block.run();
             return;
@@ -190,35 +205,43 @@ public final class State<T> implements ReactiveSource {
     private static void flushTransaction(TransactionBuffer tx) {
         if (tx.flushing) return;
         tx.flushing = true;
-        int rounds = 0;
-        while (!tx.dirtyStates.isEmpty() || !tx.dirtyDeriveds.isEmpty() || !tx.coalescedCallbacks.isEmpty()) {
-            if (++rounds > MAX_FLUSH_ROUNDS) {
-                throw new IllegalStateException("Reactive transaction exceeded maximum flush rounds (" + MAX_FLUSH_ROUNDS + "); check for cyclic state updates.");
-            }
-            if (!tx.dirtyStates.isEmpty()) {
-                List<State<?>> batch = new ArrayList<>(tx.dirtyStates);
-                tx.dirtyStates.clear();
-                for (State<?> dirty : batch) {
-                    dirty.flushToBuffer(tx);
+        try {
+            int rounds = 0;
+            while (!tx.dirtyStates.isEmpty() || !tx.dirtyDeriveds.isEmpty() || !tx.coalescedCallbacks.isEmpty()) {
+                if (++rounds > MAX_FLUSH_ROUNDS) {
+                    throw new IllegalStateException("Reactive transaction exceeded maximum flush rounds (" + MAX_FLUSH_ROUNDS + "); check for cyclic state updates.");
                 }
-            }
-            if (!tx.dirtyDeriveds.isEmpty()) {
-                List<Derived<?>> derivedBatch = new ArrayList<>(tx.dirtyDeriveds);
-                tx.dirtyDeriveds.clear();
-                Set<Derived<?>> seen = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
-                for (Derived<?> derived : derivedBatch) {
-                    if (seen.add(derived)) {
-                        derived.flushInTransaction(tx);
+                if (!tx.dirtyStates.isEmpty()) {
+                    List<State<?>> batch = new ArrayList<>(tx.dirtyStates);
+                    tx.dirtyStates.clear();
+                    for (State<?> dirty : batch) {
+                        dirty.flushToBuffer(tx);
+                    }
+                }
+                if (!tx.dirtyDeriveds.isEmpty()) {
+                    List<Derived<?>> derivedBatch = new ArrayList<>(tx.dirtyDeriveds);
+                    tx.dirtyDeriveds.clear();
+                    Set<Derived<?>> seen = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+                    for (Derived<?> derived : derivedBatch) {
+                        if (seen.add(derived)) {
+                            derived.flushInTransaction(tx);
+                        }
+                    }
+                }
+                if (tx.dirtyStates.isEmpty() && tx.dirtyDeriveds.isEmpty() && !tx.coalescedCallbacks.isEmpty()) {
+                    List<Runnable> callbacks = new ArrayList<>(tx.coalescedCallbacks.values());
+                    tx.coalescedCallbacks.clear();
+                    for (Runnable job : callbacks) {
+                        try {
+                            job.run();
+                        } catch (RuntimeException ex) {
+                            ReactiveRuntimeConfig.reportListenerError("State.transaction.listener", ex);
+                        }
                     }
                 }
             }
-            if (tx.dirtyStates.isEmpty() && tx.dirtyDeriveds.isEmpty() && !tx.coalescedCallbacks.isEmpty()) {
-                List<Runnable> callbacks = new ArrayList<>(tx.coalescedCallbacks.values());
-                tx.coalescedCallbacks.clear();
-                for (Runnable job : callbacks) {
-                    job.run();
-                }
-            }
+        } finally {
+            tx.flushing = false;
         }
     }
 }

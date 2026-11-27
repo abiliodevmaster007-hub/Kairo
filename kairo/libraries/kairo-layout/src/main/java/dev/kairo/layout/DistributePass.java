@@ -154,24 +154,75 @@ final class DistributePass {
 
         double remaining = totalMain - fixedMainAndMargins;
         double[] finalMains = new double[specs.size()];
-        for (int i = 0; i < specs.size(); i++) {
-            ChildSpec s = specs.get(i);
-            double minMain = vertical ? s.minH() : s.minW();
-            double maxMain = vertical ? s.maxH() : s.maxW();
-
-            if (s.flexGrow() > 0) {
-                double share = (remaining > 0 && totalGrowWeight > 0)
-                        ? remaining * (s.flexGrow() / totalGrowWeight)
-                        : 0;
-                finalMains[i] = LayoutStyleReader.clampDimension(baseMains[i] + share, minMain, maxMain);
-            } else if (remaining < 0 && s.flexShrink() > 0 && totalShrinkWeighted > 0) {
-                double shrinkBudget = -remaining;
-                double reducible = Math.max(0, baseMains[i] - minMain);
-                double share = shrinkBudget * ((s.flexShrink() * reducible) / totalShrinkWeighted);
-                finalMains[i] = Math.max(minMain, baseMains[i] - share);
-            } else {
-                finalMains[i] = baseMains[i];
+        if (remaining > 0 && totalGrowWeight > 0) {
+            boolean[] frozen = new boolean[specs.size()];
+            double rem = remaining;
+            double weightSum = totalGrowWeight;
+            for (int iter = 0; iter < specs.size() && rem > 1e-6 && weightSum > 0; iter++) {
+                boolean clampedAny = false;
+                for (int i = 0; i < specs.size(); i++) {
+                    ChildSpec s = specs.get(i);
+                    if (frozen[i] || s.flexGrow() <= 0) continue;
+                    double maxMain = vertical ? s.maxH() : s.maxW();
+                    double candidate = baseMains[i] + rem * (s.flexGrow() / weightSum);
+                    if (Double.isFinite(maxMain) && candidate >= maxMain) {
+                        finalMains[i] = Math.max(baseMains[i], maxMain);
+                        rem -= (finalMains[i] - baseMains[i]);
+                        weightSum -= s.flexGrow();
+                        frozen[i] = true;
+                        clampedAny = true;
+                    }
+                }
+                if (!clampedAny) break;
             }
+            for (int i = 0; i < specs.size(); i++) {
+                ChildSpec s = specs.get(i);
+                double minMain = vertical ? s.minH() : s.minW();
+                double maxMain = vertical ? s.maxH() : s.maxW();
+                if (s.flexGrow() > 0 && !frozen[i]) {
+                    double share = (rem > 0 && weightSum > 0) ? rem * (s.flexGrow() / weightSum) : 0;
+                    finalMains[i] = LayoutStyleReader.clampDimension(baseMains[i] + share, minMain, maxMain);
+                } else if (s.flexGrow() <= 0) {
+                    finalMains[i] = baseMains[i];
+                }
+            }
+        } else if (remaining < 0 && totalShrinkWeighted > 0) {
+            boolean[] frozen = new boolean[specs.size()];
+            double budget = -remaining;
+            double shrinkWeightSum = totalShrinkWeighted;
+            for (int iter = 0; iter < specs.size() && budget > 1e-6 && shrinkWeightSum > 0; iter++) {
+                boolean clampedAny = false;
+                for (int i = 0; i < specs.size(); i++) {
+                    ChildSpec s = specs.get(i);
+                    if (frozen[i] || s.flexGrow() > 0 || s.flexShrink() <= 0) continue;
+                    double minMain = vertical ? s.minH() : s.minW();
+                    double reducible = Math.max(0, baseMains[i] - minMain);
+                    double share = budget * ((s.flexShrink() * reducible) / shrinkWeightSum);
+                    if (share >= reducible) {
+                        finalMains[i] = minMain;
+                        budget -= reducible;
+                        shrinkWeightSum -= s.flexShrink() * reducible;
+                        frozen[i] = true;
+                        clampedAny = true;
+                    }
+                }
+                if (!clampedAny) break;
+            }
+            for (int i = 0; i < specs.size(); i++) {
+                ChildSpec s = specs.get(i);
+                double minMain = vertical ? s.minH() : s.minW();
+                if (s.flexGrow() > 0) {
+                    finalMains[i] = baseMains[i];
+                } else if (!frozen[i] && s.flexShrink() > 0 && shrinkWeightSum > 0 && budget > 0) {
+                    double reducible = Math.max(0, baseMains[i] - minMain);
+                    double share = budget * ((s.flexShrink() * reducible) / shrinkWeightSum);
+                    finalMains[i] = Math.max(minMain, baseMains[i] - share);
+                } else if (!frozen[i]) {
+                    finalMains[i] = baseMains[i];
+                }
+            }
+        } else {
+            System.arraycopy(baseMains, 0, finalMains, 0, specs.size());
         }
 
         double cursor = vertical ? innerY : innerX;
@@ -252,13 +303,13 @@ final class DistributePass {
             double mainCursor = vertical ? innerY : innerX;
             for (ChildSpec s : line) {
                 double availMain = totalMain;
-                double w = resolveNonFlex(s.wSpec(), s.measured().width(), vertical ? lineMaxCross : availMain, s.minW(), s.maxW());
-                double h = resolveNonFlex(s.hSpec(), s.measured().height(), vertical ? availMain : lineMaxCross, s.minH(), s.maxH());
+                double availLineCross = Math.max(0, lineMaxCross - (vertical ? s.margin().horizontal() : s.margin().vertical()));
+                double w = resolveNonFlex(s.wSpec(), s.measured().width(), vertical ? availLineCross : availMain, s.minW(), s.maxW());
+                double h = resolveNonFlex(s.hSpec(), s.measured().height(), vertical ? availMain : availLineCross, s.minH(), s.maxH());
                 double mainSize = vertical ? h : w;
                 double crossSize = vertical ? w : h;
 
                 LayoutAlignment childAlign = LayoutStyleReader.align(s.node(), containerAlign);
-                double availLineCross = Math.max(0, lineMaxCross - (vertical ? s.margin().horizontal() : s.margin().vertical()));
                 double crossOrigin = crossCursor + (vertical ? s.margin().left() : s.margin().top());
                 double crossPos = alignOffset(crossOrigin, availLineCross, crossSize, childAlign);
                 double mainPos = mainCursor + (vertical ? s.margin().top() : s.margin().left());

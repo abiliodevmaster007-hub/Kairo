@@ -78,7 +78,14 @@ public final class KairoRuntime {
     private ViewportCapabilities viewportCapabilities = ViewportCapabilities.DEFAULT;
     private VirtualNode currentTree;
     private LayoutEngine.LayoutResult lastLayoutResult;
+    private RuntimeMetrics lastMetrics = RuntimeMetrics.ZERO;
     private final List<List<RenderPatch>> patchHistory = new ArrayList<>();
+    private final List<RuntimeMetrics> metricsHistory = new ArrayList<>();
+    private long activeStyleNanos;
+    private long activeLayoutNanos;
+    private long activeTreeBuildNanos;
+    private int activeNodesRebuilt;
+    private int activeLayoutNodesProcessed;
     private boolean isRecomputing;
     private boolean recomputeQueued;
 
@@ -100,12 +107,22 @@ public final class KairoRuntime {
         lifecycleScope.onMount();
         subscribeModelDependencies();
 
+        long frameStart = System.nanoTime();
         VirtualNode initial = buildAndLayoutTree();
+        List<RenderPatch> patches = List.of();
+        long reconcileNanos = 0L;
+        long patchNanos = 0L;
         if (initial != null) {
-            List<RenderPatch> patches = reconciler.diff(null, initial);
+            long recStart = System.nanoTime();
+            patches = reconciler.diff(null, initial);
+            reconcileNanos = System.nanoTime() - recStart;
+            long applyStart = System.nanoTime();
             renderer.mountRoot(initial.id(), initial.componentType(), this::dispatchEvent);
             applyPatches(patches);
+            patchNanos = System.nanoTime() - applyStart;
         }
+        long totalNanos = System.nanoTime() - frameStart;
+        recordMetrics(reconcileNanos, patchNanos, totalNanos, patches);
         this.currentTree = initial;
     }
 
@@ -154,11 +171,19 @@ public final class KairoRuntime {
         try {
             do {
                 recomputeQueued = false;
+                long frameStart = System.nanoTime();
                 VirtualNode next = buildAndLayoutTree();
+                long recStart = System.nanoTime();
                 List<RenderPatch> patches = reconciler.diff(currentTree, next);
+                long reconcileNanos = System.nanoTime() - recStart;
+                long patchNanos = 0L;
                 if (!patches.isEmpty()) {
+                    long applyStart = System.nanoTime();
                     applyPatches(patches);
+                    patchNanos = System.nanoTime() - applyStart;
                 }
+                long totalNanos = System.nanoTime() - frameStart;
+                recordMetrics(reconcileNanos, patchNanos, totalNanos, patches);
                 this.currentTree = next;
             } while (recomputeQueued);
         } finally {
@@ -182,6 +207,7 @@ public final class KairoRuntime {
         lifecycleScope.onUnmount();
         currentTree = null;
         lastLayoutResult = null;
+        lastMetrics = RuntimeMetrics.ZERO;
     }
 
     public void destroy() {
@@ -196,6 +222,14 @@ public final class KairoRuntime {
 
     public LayoutEngine.LayoutResult lastLayoutResult() {
         return lastLayoutResult;
+    }
+
+    public RuntimeMetrics lastMetrics() {
+        return lastMetrics;
+    }
+
+    public List<RuntimeMetrics> metricsHistory() {
+        return List.copyOf(metricsHistory);
     }
 
     public dev.kairo.layout.OverflowPolicy.OverflowInfo overflowInfo(KairoId nodeId) {
@@ -295,13 +329,45 @@ public final class KairoRuntime {
         nodeIndex.clear();
         parentByNode.clear();
         styleTraces.clear();
+        activeStyleNanos = 0L;
+        activeLayoutNanos = 0L;
+        activeTreeBuildNanos = 0L;
+        activeNodesRebuilt = 0;
+        activeLayoutNodesProcessed = 0;
+
+        long buildStart = System.nanoTime();
         VirtualNode built = buildNode(rootIR, null, "root", ComputedStyle.empty(), List.of());
-        if (built == null) return null;
+        long buildEnd = System.nanoTime();
+        activeTreeBuildNanos = Math.max(0L, (buildEnd - buildStart) - activeStyleNanos);
+        activeNodesRebuilt = nodeIndex.size();
+        if (built == null) {
+            return null;
+        }
+
+        long layoutStart = System.nanoTime();
         LayoutEngine.LayoutNode layoutRoot = toLayoutNode(built);
         LayoutEngine.LayoutResult layoutResult = layoutEngine.compute(layoutRoot, viewport, renderer.leafMeasurer());
         this.lastLayoutResult = layoutResult;
         applyBounds(built, layoutResult.boundsByNode());
+        activeLayoutNanos = Math.max(0L, System.nanoTime() - layoutStart);
+        activeLayoutNodesProcessed = layoutResult.boundsByNode().size();
         return built;
+    }
+
+    private void recordMetrics(long reconcileNanos, long patchNanos, long totalNanos, List<RenderPatch> patches) {
+        RuntimeMetrics metrics = RuntimeMetrics.fromFrame(
+                activeTreeBuildNanos,
+                activeStyleNanos,
+                activeLayoutNanos,
+                reconcileNanos,
+                patchNanos,
+                totalNanos,
+                activeNodesRebuilt,
+                activeLayoutNodesProcessed,
+                patches
+        );
+        this.lastMetrics = metrics;
+        this.metricsHistory.add(metrics);
     }
 
     private VirtualNode buildNode(
@@ -351,6 +417,7 @@ public final class KairoRuntime {
         if (pressedNodeIds.contains(id)) states.add(VisualState.PRESSED);
         if (Objects.equals(hoveredNodeId, id)) states.add(VisualState.HOVER);
 
+        long styleStart = System.nanoTime();
         StyleEngine.StyleContext styleCtx = StyleEngine.StyleContext.from(ir, states, ancestors);
         StyleResolutionResult styleResult = styleEngine.resolveWithTrace(
                 stylesheet,
@@ -362,6 +429,7 @@ public final class KairoRuntime {
                 props.get("style"),
                 viewportCapabilities
         );
+        activeStyleNanos += Math.max(0L, System.nanoTime() - styleStart);
         ComputedStyle style = styleResult.style();
         styleTraces.put(id, styleResult);
 

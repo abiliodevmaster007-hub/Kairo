@@ -28,7 +28,8 @@ import java.util.Map;
  * Produces IRDocument with source locations, explicit component/style imports and Kairo style validation.
  */
 public final class KairoXmlParser {
-    private static final XMLInputFactory SECURE_FACTORY = createSecureFactory();
+    private static final ThreadLocal<XMLInputFactory> SECURE_FACTORY =
+            ThreadLocal.withInitial(KairoXmlParser::createSecureFactory);
 
     private static XMLInputFactory createSecureFactory() {
         XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -80,8 +81,9 @@ public final class KairoXmlParser {
         Map<String, String> componentImports = new LinkedHashMap<>();
         NodeIR root = null;
 
+        XMLStreamReader reader = null;
         try {
-            XMLStreamReader reader = SECURE_FACTORY.createXMLStreamReader(new StringReader(xmlSource));
+            reader = SECURE_FACTORY.get().createXMLStreamReader(new StringReader(xmlSource));
             while (reader.hasNext()) {
                 int event = reader.next();
                 if (event == XMLStreamConstants.START_ELEMENT) {
@@ -191,13 +193,20 @@ public final class KairoXmlParser {
                     }
                 }
             }
-            reader.close();
         } catch (XMLStreamException ex) {
             Location loc = ex.getLocation();
             SourceLocation sourceLoc = loc != null
                     ? new SourceLocation(fileName, loc.getLineNumber(), loc.getColumnNumber())
                     : new SourceLocation(fileName, -1, -1);
             diagnostics.error("XML_SYNTAX", ex.getMessage(), sourceLoc);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (XMLStreamException ignored) {
+                    // Best-effort reader cleanup
+                }
+            }
         }
 
         if (root != null) {

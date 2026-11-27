@@ -229,3 +229,28 @@ Este documento regista tudo o que foi construído, decidido e verificado em cada
 2. **Documentação Final da v1**
    - `docs/COMPONENTES_CONTRATOS_v1.md`: catálogo completo dos 19 componentes, regras `.kcss`, fronteira ArchUnit/segurança e limitações v1.
    - `README.md`: visão consolidada dos 25 módulos, instruções de verificação e arquitetura v1 pronta.
+
+---
+
+## Estabilização & Endurecimento v1 (Etapas S1–S5) [CONCLUÍDA]
+
+### O que foi endurecido sem quebrar contratos públicos da v1
+1. **Etapa S1 — CI na Raiz & Reprodutibilidade Gradle**
+   - Criado `/.github/workflows/kairo-ci.yml` na raiz do repositório validando em paralelo o ecossistema Java 17 (`Gradle 8.10.2`, `:tests:architecture-tests:test`, `check jacocoTestReport`, e guarda estática alargada a todos os módulos neutros incluindo `kairo-inspector`, `kairo-testkit`, `tools/kairo-cli` e `examples/gallery`) e a aplicação Web (`npm ci`, `npm run lint`, `npm run build`).
+   - Sincronizado `/kairo/.github/workflows/ci.yml` com Gradle `8.10.2` e a lista completa de módulos neutros.
+2. **Etapa S2 — Contrato de Concorrência (`UiScheduler`) & Isolamento de Transações (`kairo-state` + `kairo-platform-android`)**
+   - Novos contratos neutros em `dev.kairo.state`: `UiScheduler`, `ConcurrencyPolicy` (`DISPATCH_TO_UI`, `STRICT_THROW`, `IMMEDIATE`), `ReactiveErrorHandler` e `ReactiveRuntimeConfig`.
+   - `State<T>`, `Derived<T>` e `ObservableList<T>` endurecidos com visibilidade `volatile`/sincronizada, redirecionamento automático ou rejeição estrita (`STRICT_THROW`) em mutações fora da UI thread e isolamento de exceções por *listener* (sem bloquear *Derived*s nem subscritores irmãos; ciclos reativos continuam rejeitados explicitamente).
+   - `AndroidMainScheduler` passa a implementar `UiScheduler` + `FutureState.Scheduler`, registando-se automaticamente em `ReactiveRuntimeConfig.setUiScheduler(...)`.
+   - Suite `StateConcurrencyAndIsolationTest.java` cobrindo *workers* concorrentes em `DISPATCH_TO_UI`, rejeição `STRICT_THROW`, isolamento de erros em *listeners* e limite de ciclos.
+3. **Etapa S3 — Verificação Matemática do Motor de Layout (`kairo-layout`)**
+   - Refinado `DistributePass.java` com redistribuição iterativa (*freeze loop*) quando irmãos `fill`/`grow`/`shrink` atingem `min-*`/`max-*` e cálculo exato do eixo cruzado líquido (descontando margens) em linhas com `wrap`.
+   - Criada a suite matemática dedicada por categoria: `VerticalLayoutMathTest`, `HorizontalLayoutMathTest`, `ConstraintsLayoutMathTest`, `WrappingLayoutMathTest` e `OverflowLayoutMathTest`.
+4. **Etapa S4 — Thread Safety no Parser XML (`kairo-xml`)**
+   - `KairoXmlParser.java` atualizado para `ThreadLocal<XMLInputFactory>` mantendo DTD/entidades externas bloqueadas por thread e fecho garantido do `XMLStreamReader` em `finally`.
+   - Criado `KairoXmlConcurrencyTest.java` validando parsing concorrente multi-thread de XML válidos, malformados e tentativas XXE.
+5. **Etapa S5 — Instrumentação de Performance (`kairo-runtime` & `kairo-inspector`)**
+   - Criado `RuntimeMetrics.java` medindo por fase (`treeConstruction`, `styleResolution`, `layout`, `reconciliation`, `patchApplication`, `total`) e cardinalidades (`nodesRebuilt`, `nodesCreated`, `nodesChanged`, `nodesMoved`, `nodesRemoved`, `layoutNodesProcessed`, `patchesEmitted`).
+   - `KairoRuntime` instrumenta `mount()` e `recompute()`, expondo `lastMetrics()` e `metricsHistory()`.
+   - `TreeInspector` expõe `dumpPerformanceReport(KairoRuntime)` e inclui o bloco `Runtime Performance:` em `dumpSnapshot(...)`, verificado em `RuntimeMetricsTest.java`.
+

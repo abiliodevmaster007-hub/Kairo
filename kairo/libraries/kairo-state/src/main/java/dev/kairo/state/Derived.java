@@ -22,10 +22,11 @@ public final class Derived<T> implements Disposable, ReactiveSource {
     private final Supplier<T> computer;
     private final CopyOnWriteArrayList<Consumer<T>> listeners = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Derived<?>> derivedDependents = new CopyOnWriteArrayList<>();
+    private final Object lock = new Object();
     private final List<Disposable> depSubscriptions = new ArrayList<>();
-    private T cachedValue;
-    private boolean initialized;
-    private boolean disposed;
+    private volatile T cachedValue;
+    private volatile boolean initialized;
+    private volatile boolean disposed;
 
     public Derived(Supplier<T> computer) {
         this.computer = computer;
@@ -91,46 +92,52 @@ public final class Derived<T> implements Disposable, ReactiveSource {
             }
             T snapshot = this.cachedValue;
             for (Consumer<T> listener : listeners) {
-                listener.accept(snapshot);
+                try {
+                    listener.accept(snapshot);
+                } catch (RuntimeException ex) {
+                    ReactiveRuntimeConfig.reportListenerError("Derived.listener", ex);
+                }
             }
         }
     }
 
     private boolean recomputeInternal() {
-        if (disposed) return false;
-        Set<Derived<?>> active = ACTIVE_COMPUTATIONS.get();
-        if (!active.add(this)) {
-            throw new IllegalStateException("Cyclic Derived dependency detected");
-        }
-        try {
-            disposeDepSubscriptions();
-            State.beginTracking();
-            T nextValue;
-            Set<ReactiveSource> deps;
+        synchronized (lock) {
+            if (disposed) return false;
+            Set<Derived<?>> active = ACTIVE_COMPUTATIONS.get();
+            if (!active.add(this)) {
+                throw new IllegalStateException("Cyclic Derived dependency detected");
+            }
             try {
-                nextValue = computer.get();
-            } finally {
-                deps = State.endTracking();
-            }
-
-            for (ReactiveSource dep : deps) {
-                if (dep instanceof State<?> st) {
-                    depSubscriptions.add(st.subscribeDerived(this));
-                } else if (dep instanceof Derived<?> dv && dv != this) {
-                    depSubscriptions.add(dv.subscribeDerived(this));
-                } else if (dep != this) {
-                    depSubscriptions.add(dep.subscribeAny(this::onDependencyChanged));
+                disposeDepSubscriptions();
+                State.beginTracking();
+                T nextValue;
+                Set<ReactiveSource> deps;
+                try {
+                    nextValue = computer.get();
+                } finally {
+                    deps = State.endTracking();
                 }
-            }
 
-            boolean changed = !initialized || !Objects.equals(cachedValue, nextValue);
-            cachedValue = nextValue;
-            initialized = true;
-            return changed;
-        } finally {
-            active.remove(this);
-            if (active.isEmpty()) {
-                ACTIVE_COMPUTATIONS.remove();
+                for (ReactiveSource dep : deps) {
+                    if (dep instanceof State<?> st) {
+                        depSubscriptions.add(st.subscribeDerived(this));
+                    } else if (dep instanceof Derived<?> dv && dv != this) {
+                        depSubscriptions.add(dv.subscribeDerived(this));
+                    } else if (dep != this) {
+                        depSubscriptions.add(dep.subscribeAny(this::onDependencyChanged));
+                    }
+                }
+
+                boolean changed = !initialized || !Objects.equals(cachedValue, nextValue);
+                cachedValue = nextValue;
+                initialized = true;
+                return changed;
+            } finally {
+                active.remove(this);
+                if (active.isEmpty()) {
+                    ACTIVE_COMPUTATIONS.remove();
+                }
             }
         }
     }
@@ -144,9 +151,11 @@ public final class Derived<T> implements Disposable, ReactiveSource {
 
     @Override
     public void dispose() {
-        disposed = true;
-        disposeDepSubscriptions();
-        listeners.clear();
-        derivedDependents.clear();
+        synchronized (lock) {
+            disposed = true;
+            disposeDepSubscriptions();
+            listeners.clear();
+            derivedDependents.clear();
+        }
     }
 }
