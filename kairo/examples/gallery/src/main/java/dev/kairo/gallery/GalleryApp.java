@@ -43,7 +43,7 @@ public final class GalleryApp {
     );
 
     public static final class GalleryScreenModel implements KairoRuntime.ScreenModel {
-        public final ObservableList<Category> categories = new ObservableList<>(CATEGORIES);
+        public final ObservableList<Category> categories = ObservableList.of(CATEGORIES);
         public final State<String> searchQuery = State.of("");
         public final State<String> activeCategory = State.of("layout");
         public final State<Integer> clickCount = State.of(0);
@@ -136,7 +136,7 @@ public final class GalleryApp {
     }
 
     public static String serializedSelectCatalog() {
-        return SelectOption.serializeList(List.of(
+        return SelectOption.serialize(List.of(
                 new SelectOption("android", "Android SDK 26+"),
                 new SelectOption("jvm", "JVM TestKit"),
                 new SelectOption("ios", "iOS (Research)", true)

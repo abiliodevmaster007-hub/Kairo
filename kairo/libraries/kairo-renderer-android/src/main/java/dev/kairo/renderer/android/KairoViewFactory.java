@@ -202,7 +202,7 @@ public final class KairoViewFactory {
     }
 
     private void applySelectOptions(KairoId id, Spinner spinner, String serialized) {
-        List<SelectOption> options = SelectOption.parseList(serialized);
+        List<SelectOption> options = SelectOption.parse(serialized);
         selectOptionsByNode.put(id, options);
         List<String> labels = new ArrayList<>(options.size());
         for (SelectOption opt : options) {

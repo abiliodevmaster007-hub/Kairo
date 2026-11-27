@@ -25,6 +25,7 @@ public final class ObservableList<T> implements ReactiveSource {
     private final Object lock = new Object();
     private final List<T> items = new ArrayList<>();
     private final CopyOnWriteArrayList<Consumer<Mutation<T>>> listeners = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Derived<?>> derivedDependents = new CopyOnWriteArrayList<>();
 
     public static <T> ObservableList<T> of() {
         return new ObservableList<>();
@@ -167,20 +168,24 @@ public final class ObservableList<T> implements ReactiveSource {
         return subscribe(ignored -> listener.run());
     }
 
+    Disposable subscribeDerived(Derived<?> dependent) {
+        if (!derivedDependents.contains(dependent)) {
+            derivedDependents.add(dependent);
+        }
+        return () -> derivedDependents.remove(dependent);
+    }
+
     private void emit(Mutation<T> mutation) {
-        State.TransactionBuffer tx = State.currentTransaction();
-        if (tx != null) {
+        if (derivedDependents.isEmpty() && listeners.isEmpty()) {
+            return;
+        }
+        State.dispatchInTransactionOrImplicit(tx -> {
+            for (Derived<?> dependent : derivedDependents) {
+                tx.scheduleDerived(dependent);
+            }
             for (Consumer<Mutation<T>> listener : listeners) {
                 tx.scheduleCallback(this, listener, () -> listener.accept(mutation));
             }
-            return;
-        }
-        for (Consumer<Mutation<T>> listener : listeners) {
-            try {
-                listener.accept(mutation);
-            } catch (RuntimeException ex) {
-                ReactiveRuntimeConfig.reportListenerError("ObservableList.listener", ex);
-            }
-        }
+        });
     }
 }

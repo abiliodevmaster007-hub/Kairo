@@ -89,13 +89,13 @@ final class GalleryAcceptanceTest {
         assertThat(renderer.findByLogicalId("openBtn").bounds.width()).isGreaterThan(0);
 
         // 04. Selection options serialization
-        List<SelectOption> options = SelectOption.parseList(GalleryApp.serializedSelectCatalog());
+        List<SelectOption> options = SelectOption.parse(GalleryApp.serializedSelectCatalog());
         assertThat(options).hasSize(3);
         assertThat(options.get(2).disabled()).isTrue();
 
         // 05. Local resources & path-traversal rejection
         ResourceManager resources = GalleryApp.createLocalResources();
-        assertThat(resources.resolveText("gallery/logo.svg")).contains("<svg");
+        assertThat(resources.resolveText("gallery/logo.svg").orElseThrow()).contains("<svg");
         assertThatThrownBy(() -> resources.resolve("../secrets.txt")).isInstanceOf(SecurityException.class);
 
         // 07. Forms with ValidateOn + password redaction
@@ -118,12 +118,13 @@ final class GalleryAcceptanceTest {
         assertThat(window.slice(tenThousand).size()).isLessThan(25);
         assertThat(window.totalContentHeight()).isEqualTo(560_000.0);
 
-        List<KairoListDiff.Operation> diff = new KairoListDiff().diff(
+        List<KairoListDiff.Op<StableKey>> diff = new KairoListDiff().diff(
                 List.of(StableKey.of("a"), StableKey.of("b")),
-                List.of(StableKey.of("b"), StableKey.of("a"), StableKey.of("c"))
+                List.of(StableKey.of("b"), StableKey.of("a"), StableKey.of("c")),
+                k -> k
         );
-        assertThat(diff).anyMatch(op -> op instanceof KairoListDiff.Operation.Move)
-                .anyMatch(op -> op instanceof KairoListDiff.Operation.Insert);
+        assertThat(diff).anyMatch(op -> op instanceof KairoListDiff.Op.Move<?>)
+                .anyMatch(op -> op instanceof KairoListDiff.Op.Insert<?>);
 
         // 09. Navigation Router with query params & guards
         State<Boolean> authed = State.of(false);

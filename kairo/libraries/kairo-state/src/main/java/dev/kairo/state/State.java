@@ -180,6 +180,25 @@ public final class State<T> implements ReactiveSource {
         return ACTIVE_TRANSACTION.get();
     }
 
+    static void dispatchInTransactionOrImplicit(Consumer<TransactionBuffer> populator) {
+        TransactionBuffer tx = ACTIVE_TRANSACTION.get();
+        if (tx != null) {
+            populator.accept(tx);
+            return;
+        }
+        TransactionBuffer implicit = new TransactionBuffer();
+        ACTIVE_TRANSACTION.set(implicit);
+        try {
+            populator.accept(implicit);
+            flushTransaction(implicit);
+        } catch (RuntimeException ex) {
+            ReactiveRuntimeConfig.reportTransactionError(ex);
+            throw ex;
+        } finally {
+            ACTIVE_TRANSACTION.remove();
+        }
+    }
+
     public static void transaction(Runnable block) {
         Objects.requireNonNull(block, "block cannot be null");
         if (!ReactiveRuntimeConfig.checkUiThreadOrDispatch(() -> transaction(block), "State.transaction")) {

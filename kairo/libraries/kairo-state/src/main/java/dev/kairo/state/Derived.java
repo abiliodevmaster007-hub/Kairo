@@ -144,6 +144,8 @@ public final class Derived<T> implements Disposable, ReactiveSource {
                         depSubscriptions.add(st.subscribeDerived(this));
                     } else if (dep instanceof Derived<?> dv && dv != this) {
                         depSubscriptions.add(dv.subscribeDerived(this));
+                    } else if (dep instanceof ObservableList<?> ol) {
+                        depSubscriptions.add(ol.subscribeDerived(this));
                     } else if (dep != this) {
                         depSubscriptions.add(dep.subscribeAny(this::onDependencyChanged));
                     }
