@@ -71,4 +71,46 @@ final class KairoSceneEncoderTest {
         assertThat(encoded.visible()).isFalse();
         assertThat((encoded.visualFlags() & KairoSceneEncoder.FLAG_DISABLED) != 0).isTrue();
     }
+
+    @Test
+    void handlesNamedColorsFocusedInputCardDefaultsAndRemainingFlags() {
+        assertThat(KairoColorParser.parseArgb(null, 0x12345678)).isEqualTo(0x12345678);
+        assertThat(KairoColorParser.parseArgb("black", 0)).isEqualTo(0xFF000000);
+        assertThat(KairoColorParser.parseArgb("white", 0)).isEqualTo(0xFFFFFFFF);
+        assertThat(KairoColorParser.parseArgb("red", 0)).isEqualTo(0xFFEF4444);
+        assertThat(KairoColorParser.parseArgb("#zz", 0xFF010203)).isEqualTo(0xFF010203);
+        assertThat(KairoSceneEncoder.encodeVisualFlags(null)).isZero();
+
+        KairoSceneEncoder.EncodedVisualNode card = KairoSceneEncoder.encode(
+                "Card",
+                new ComputedStyle(Map.of("background-color", "white")),
+                null,
+                Set.of(VisualState.PRESSED, VisualState.CHECKED, VisualState.SELECTED),
+                null
+        );
+        assertThat(card.backgroundArgb()).isEqualTo(0xFFFFFFFF);
+        assertThat(card.cornerRadiusPx()).isEqualTo(12.0f);
+        assertThat((card.visualFlags() & KairoSceneEncoder.FLAG_PRESSED) != 0).isTrue();
+        assertThat((card.visualFlags() & KairoSceneEncoder.FLAG_CHECKED) != 0).isTrue();
+        assertThat((card.visualFlags() & KairoSceneEncoder.FLAG_SELECTED) != 0).isTrue();
+
+        KairoSceneEncoder.EncodedVisualNode focusedInput = KairoSceneEncoder.encode(
+                "Input",
+                ComputedStyle.empty(),
+                new LayoutBounds(0, 0, 200, 40),
+                Set.of(VisualState.FOCUSED),
+                Map.of()
+        );
+        assertThat(focusedInput.borderArgb()).isEqualTo(0xFF4F46E5);
+        assertThat(focusedInput.borderWidthPx()).isEqualTo(1.5f);
+
+        KairoSceneEncoder.EncodedVisualNode divider = KairoSceneEncoder.encode(
+                "Divider",
+                null,
+                new LayoutBounds(0, 0, 200, 1),
+                Set.of(),
+                Map.of()
+        );
+        assertThat(divider.backgroundArgb()).isEqualTo(0xFF27272A);
+    }
 }
