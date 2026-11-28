@@ -105,11 +105,12 @@ final class RuntimePhase1RemediationTest {
         assertThat(renderer.findByLogicalId("screenText")).isNull();
         assertThat(renderer.findByLogicalId("columnText")).isNotNull();
 
-        // Old root listeners & scope must be cleared immediately and must not trigger RemoveNode on new root
+        // Old root listeners & scope must be cleared immediately and must not trigger RemoveNode during replacement
         assertThat(runtime.listenerCount(screenRootId)).isZero();
         List<RenderPatch> swapPatches = runtime.patchHistory().get(historyBeforeSwap);
-        assertThat(swapPatches).noneMatch(p -> p instanceof RenderPatch.RemoveNode r && r.id().equals(columnRoot.id()));
-        assertThat(swapPatches).noneMatch(p -> p instanceof RenderPatch.CreateNode c && c.id().equals(columnRoot.id()));
+        assertThat(swapPatches).noneMatch(RenderPatch.RemoveNode.class::isInstance);
+        assertThat(runtime.lastMetrics().nodesCreated()).isEqualTo(3);
+        assertThat(runtime.lastMetrics().nodesChanged()).isZero();
 
         // New root subtree handles events properly
         FakeRenderer.FakeNode columnBtn = renderer.findByLogicalId("columnBtn");

@@ -163,7 +163,7 @@ public final class KairoRuntime {
         long patchNanos = 0L;
         if (initial != null) {
             long recStart = System.nanoTime();
-            patches = reconciler.diffMountedRoot(initial);
+            patches = reconciler.diff(null, initial);
             reconcileNanos = System.nanoTime() - recStart;
             long applyStart = System.nanoTime();
             mountNewRoot(initial, patches);
@@ -236,7 +236,7 @@ public final class KairoRuntime {
 
                 if (prev == null && next != null) {
                     long recStart = System.nanoTime();
-                    patches = reconciler.diffMountedRoot(next);
+                    patches = reconciler.diff(null, next);
                     reconcileNanos = System.nanoTime() - recStart;
                     long applyStart = System.nanoTime();
                     mountNewRoot(next, patches);
@@ -248,7 +248,7 @@ public final class KairoRuntime {
                 } else if (prev != null && next != null
                         && (!Objects.equals(prev.id(), next.id()) || !prev.componentType().equals(next.componentType()))) {
                     long recStart = System.nanoTime();
-                    patches = reconciler.diffMountedRoot(next);
+                    patches = reconciler.diff(null, next);
                     reconcileNanos = System.nanoTime() - recStart;
                     long applyStart = System.nanoTime();
                     replaceRoot(prev, next, patches);
