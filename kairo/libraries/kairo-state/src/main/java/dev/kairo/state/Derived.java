@@ -2,9 +2,9 @@ package dev.kairo.state;
 
 import dev.kairo.lifecycle.Disposable;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,7 +25,7 @@ public final class Derived<T> implements Disposable, ReactiveSource {
     private final CopyOnWriteArrayList<Consumer<T>> listeners = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<Derived<?>> derivedDependents = new CopyOnWriteArrayList<>();
     private final Object lock = new Object();
-    private final List<Disposable> depSubscriptions = new ArrayList<>();
+    private final Map<ReactiveSource, Disposable> depSubscriptions = new LinkedHashMap<>();
     private volatile T cachedValue;
     private volatile boolean initialized;
     private volatile boolean disposed;
@@ -123,33 +123,29 @@ public final class Derived<T> implements Disposable, ReactiveSource {
             }
             try {
                 State.beginTracking();
-                T nextValue;
+                T nextValue = null;
+                RuntimeException failure = null;
                 Set<ReactiveSource> deps;
                 try {
                     nextValue = computer.get();
                 } catch (RuntimeException ex) {
-                    if (!initialized || isCyclicException(ex)) {
-                        throw ex;
-                    }
-                    ReactiveRuntimeConfig.reportDerivedError(this, ex);
-                    return false;
+                    failure = ex;
                 } finally {
                     deps = State.endTracking();
                 }
 
-                // Compute-before-replace: only discard old subscriptions once the new value succeeded.
-                disposeDepSubscriptions();
-                for (ReactiveSource dep : deps) {
-                    if (dep instanceof State<?> st) {
-                        depSubscriptions.add(st.subscribeDerived(this));
-                    } else if (dep instanceof Derived<?> dv && dv != this) {
-                        depSubscriptions.add(dv.subscribeDerived(this));
-                    } else if (dep instanceof ObservableList<?> ol) {
-                        depSubscriptions.add(ol.subscribeDerived(this));
-                    } else if (dep != this) {
-                        depSubscriptions.add(dep.subscribeAny(this::onDependencyChanged));
+                if (failure != null) {
+                    if (!initialized || isCyclicException(failure)) {
+                        throw failure;
                     }
+                    // Retain previous subscriptions AND subscribe newly discovered dependencies
+                    // entered before the exception so fixing those dependencies triggers recovery.
+                    subscribeMissingDependencies(deps);
+                    ReactiveRuntimeConfig.reportDerivedError(this, failure);
+                    return false;
                 }
+
+                reconcileDepSubscriptions(deps);
 
                 boolean changed = !initialized || !Objects.equals(cachedValue, nextValue);
                 cachedValue = nextValue;
@@ -164,6 +160,40 @@ public final class Derived<T> implements Disposable, ReactiveSource {
         }
     }
 
+    private void subscribeMissingDependencies(Set<ReactiveSource> deps) {
+        for (ReactiveSource dep : deps) {
+            if (dep == this || depSubscriptions.containsKey(dep)) {
+                continue;
+            }
+            depSubscriptions.put(dep, subscribeToSource(dep));
+        }
+    }
+
+    private void reconcileDepSubscriptions(Set<ReactiveSource> deps) {
+        var it = depSubscriptions.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            if (!deps.contains(entry.getKey())) {
+                entry.getValue().dispose();
+                it.remove();
+            }
+        }
+        subscribeMissingDependencies(deps);
+    }
+
+    private Disposable subscribeToSource(ReactiveSource dep) {
+        if (dep instanceof State<?> st) {
+            return st.subscribeDerived(this);
+        }
+        if (dep instanceof Derived<?> dv) {
+            return dv.subscribeDerived(this);
+        }
+        if (dep instanceof ObservableList<?> ol) {
+            return ol.subscribeDerived(this);
+        }
+        return dep.subscribeAny(this::onDependencyChanged);
+    }
+
     private static boolean isCyclicException(RuntimeException ex) {
         return ex instanceof IllegalStateException
                 && ex.getMessage() != null
@@ -171,7 +201,7 @@ public final class Derived<T> implements Disposable, ReactiveSource {
     }
 
     private void disposeDepSubscriptions() {
-        for (Disposable d : depSubscriptions) {
+        for (Disposable d : depSubscriptions.values()) {
             d.dispose();
         }
         depSubscriptions.clear();

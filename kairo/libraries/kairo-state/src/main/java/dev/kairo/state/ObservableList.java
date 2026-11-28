@@ -20,6 +20,11 @@ public final class ObservableList<T> implements ReactiveSource {
         record Moved<T>(int fromIndex, int toIndex, T item) implements Mutation<T> {}
         record Cleared<T>() implements Mutation<T> {}
         record ReplacedAll<T>(List<T> previous, List<T> current) implements Mutation<T> {}
+        record Batch<T>(List<Mutation<T>> mutations) implements Mutation<T> {
+            public Batch {
+                mutations = List.copyOf(mutations);
+            }
+        }
     }
 
     private final Object lock = new Object();
@@ -183,9 +188,33 @@ public final class ObservableList<T> implements ReactiveSource {
             for (Derived<?> dependent : derivedDependents) {
                 tx.scheduleDerived(dependent);
             }
-            for (Consumer<Mutation<T>> listener : listeners) {
-                tx.scheduleCallback(this, listener, () -> listener.accept(mutation));
+            if (!listeners.isEmpty()) {
+                tx.scheduleListMutation(this, mutation);
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    void deliverBatchUnchecked(List<Mutation<?>> rawMutations) {
+        if (rawMutations == null || rawMutations.isEmpty() || listeners.isEmpty()) {
+            return;
+        }
+        Mutation<T> payload;
+        if (rawMutations.size() == 1) {
+            payload = (Mutation<T>) rawMutations.get(0);
+        } else {
+            List<Mutation<T>> typed = new ArrayList<>(rawMutations.size());
+            for (Mutation<?> mutation : rawMutations) {
+                typed.add((Mutation<T>) mutation);
+            }
+            payload = new Mutation.Batch<>(typed);
+        }
+        for (Consumer<Mutation<T>> listener : listeners) {
+            try {
+                listener.accept(payload);
+            } catch (RuntimeException ex) {
+                ReactiveRuntimeConfig.reportListenerError("ObservableList.listener", ex);
+            }
+        }
     }
 }

@@ -101,4 +101,50 @@ final class ReactiveStateTest {
         assertThat(guard.activeOrigin()).isEqualTo(TwoWayLoopGuard.Origin.NONE);
         d.dispose();
     }
+
+    @Test
+    void observableListDeliversOrderedBatchInsideTransactionAndDirectMutationOutside() {
+        ObservableList<String> list = ObservableList.of();
+        ObservableList<Integer> numbers = ObservableList.of();
+        List<ObservableList.Mutation<String>> listEvents = new ArrayList<>();
+        List<ObservableList.Mutation<Integer>> numberEvents = new ArrayList<>();
+        list.subscribe(listEvents::add);
+        numbers.subscribe(numberEvents::add);
+
+        // Outside explicit transaction -> delivers direct granular mutation
+        list.add("zero");
+        assertThat(listEvents).containsExactly(new ObservableList.Mutation.Added<>(0, "zero"));
+        listEvents.clear();
+
+        // Multiple mutations inside State.transaction -> delivers ordered Batch without dropping events
+        State.transaction(() -> {
+            list.add("one");
+            list.add("two");
+            list.removeAt(0);
+            list.update(0, "ONE");
+            list.add(0, "head");
+            numbers.add(10);
+            numbers.add(20);
+        });
+
+        assertThat(list.snapshot()).containsExactly("head", "ONE", "two");
+        assertThat(listEvents).hasSize(1);
+        assertThat(listEvents.get(0)).isInstanceOf(ObservableList.Mutation.Batch.class);
+        var batch = (ObservableList.Mutation.Batch<String>) listEvents.get(0);
+        assertThat(batch.mutations()).containsExactly(
+                new ObservableList.Mutation.Added<>(1, "one"),
+                new ObservableList.Mutation.Added<>(2, "two"),
+                new ObservableList.Mutation.Removed<>(0, "zero"),
+                new ObservableList.Mutation.Updated<>(0, "one", "ONE"),
+                new ObservableList.Mutation.Added<>(0, "head")
+        );
+
+        assertThat(numberEvents).hasSize(1);
+        assertThat(numberEvents.get(0)).isInstanceOf(ObservableList.Mutation.Batch.class);
+        var numBatch = (ObservableList.Mutation.Batch<Integer>) numberEvents.get(0);
+        assertThat(numBatch.mutations()).containsExactly(
+                new ObservableList.Mutation.Added<>(0, 10),
+                new ObservableList.Mutation.Added<>(1, 20)
+        );
+    }
 }

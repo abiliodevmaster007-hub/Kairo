@@ -3,6 +3,7 @@ package dev.kairo.runtime;
 import dev.kairo.core.KairoId;
 import dev.kairo.core.StableKey;
 import dev.kairo.renderer.api.RenderPatch;
+import dev.kairo.style.ComputedStyle;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,6 +37,34 @@ public final class Reconciler {
             return patches;
         }
         reconcileNode(prev, next, patches);
+        return patches;
+    }
+
+    /**
+     * Produces incremental patches for a root whose native container was already created via
+     * {@link dev.kairo.renderer.api.Renderer#mountRoot} without emitting a redundant
+     * {@link RenderPatch.CreateNode} or detaching {@link RenderPatch.RemoveNode} on the root itself.
+     */
+    public List<RenderPatch> diffMountedRoot(VirtualNode root) {
+        List<RenderPatch> patches = new ArrayList<>();
+        if (root == null) {
+            return patches;
+        }
+        for (var entry : root.props().entrySet()) {
+            patches.add(new RenderPatch.UpdateProp(root.id(), entry.getKey(), entry.getValue()));
+        }
+        if (root.style() != null && !ComputedStyle.empty().equals(root.style())) {
+            patches.add(new RenderPatch.UpdateStyle(root.id(), root.style()));
+        }
+        if (!root.visualStates().isEmpty()) {
+            patches.add(new RenderPatch.UpdateVisualStates(root.id(), root.visualStates()));
+        }
+        patches.add(new RenderPatch.UpdateBounds(root.id(), root.bounds()));
+        for (int i = 0; i < root.children().size(); i++) {
+            VirtualNode child = root.children().get(i);
+            emitMountSubtree(child, patches);
+            patches.add(new RenderPatch.InsertChild(root.id(), child.id(), i));
+        }
         return patches;
     }
 

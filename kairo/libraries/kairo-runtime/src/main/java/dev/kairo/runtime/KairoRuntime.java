@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -77,6 +78,7 @@ public final class KairoRuntime {
     }
 
     private final Map<String, IdentityEntry> stableNodeIds = new LinkedHashMap<>();
+    private final Map<KairoId, LifecycleScope> nodeScopes = new LinkedHashMap<>();
     private final Map<KairoId, VirtualNode> nodeIndex = new LinkedHashMap<>();
     private final Map<KairoId, KairoId> parentByNode = new LinkedHashMap<>();
     private final Map<KairoId, StyleResolutionResult> styleTraces = new LinkedHashMap<>();
@@ -130,6 +132,18 @@ public final class KairoRuntime {
         return eventDispatcher.listenerCount(nodeId);
     }
 
+    public int ownedNodeScopeCount() {
+        return nodeScopes.size();
+    }
+
+    public int retainedListenerDisposableCount() {
+        int total = 0;
+        for (LifecycleScope scope : nodeScopes.values()) {
+            total += scope.activeMountDisposableCount();
+        }
+        return total;
+    }
+
     public void mount(NodeIR rootIR, CssStylesheet stylesheet, ScreenModel model, LayoutConstraints viewport) {
         if (lifecycleScope.isMounted() || currentTree != null || mountedRootId != null) {
             unmount();
@@ -149,12 +163,10 @@ public final class KairoRuntime {
         long patchNanos = 0L;
         if (initial != null) {
             long recStart = System.nanoTime();
-            patches = reconciler.diff(null, initial);
+            patches = reconciler.diffMountedRoot(initial);
             reconcileNanos = System.nanoTime() - recStart;
             long applyStart = System.nanoTime();
-            renderer.mountRoot(initial.id(), initial.componentType(), this::dispatchEvent);
-            mountedRootId = initial.id();
-            applyPatches(patches);
+            mountNewRoot(initial, patches);
             patchNanos = System.nanoTime() - applyStart;
         } else {
             mountedRootId = null;
@@ -192,11 +204,17 @@ public final class KairoRuntime {
     }
 
     public <E extends UIEvent> Disposable addEventListener(KairoId nodeId, Class<E> type, Consumer<E> handler) {
-        return lifecycleScope.ownForMount(eventDispatcher.addListener(nodeId, type, handler));
+        if (lifecycleScope.isDestroyed()) {
+            return () -> {};
+        }
+        return registerNodeDisposable(nodeId, eventDispatcher.addListener(nodeId, type, handler));
     }
 
     public <E extends UIEvent> Disposable addCaptureEventListener(KairoId nodeId, Class<E> type, Consumer<E> handler) {
-        return lifecycleScope.ownForMount(eventDispatcher.addCaptureListener(nodeId, type, handler));
+        if (lifecycleScope.isDestroyed()) {
+            return () -> {};
+        }
+        return registerNodeDisposable(nodeId, eventDispatcher.addCaptureListener(nodeId, type, handler));
     }
 
     public void recompute() {
@@ -212,41 +230,38 @@ public final class KairoRuntime {
                 long frameStart = System.nanoTime();
                 VirtualNode prev = this.currentTree;
                 VirtualNode next = buildAndLayoutTree();
-                long recStart = System.nanoTime();
-                List<RenderPatch> patches = reconciler.diff(prev, next);
-                long reconcileNanos = System.nanoTime() - recStart;
+                List<RenderPatch> patches = List.of();
+                long reconcileNanos = 0L;
                 long patchNanos = 0L;
 
                 if (prev == null && next != null) {
+                    long recStart = System.nanoTime();
+                    patches = reconciler.diffMountedRoot(next);
+                    reconcileNanos = System.nanoTime() - recStart;
                     long applyStart = System.nanoTime();
-                    renderer.mountRoot(next.id(), next.componentType(), this::dispatchEvent);
-                    mountedRootId = next.id();
-                    applyPatches(patches);
+                    mountNewRoot(next, patches);
                     patchNanos = System.nanoTime() - applyStart;
                 } else if (prev != null && next == null) {
                     long applyStart = System.nanoTime();
-                    if (!patches.isEmpty()) {
-                        applyPatches(patches);
-                    }
-                    if (mountedRootId != null) {
-                        renderer.unmountRoot(mountedRootId);
-                        mountedRootId = null;
-                    }
+                    unmountCurrentRoot(prev.id());
                     patchNanos = System.nanoTime() - applyStart;
                 } else if (prev != null && next != null
                         && (!Objects.equals(prev.id(), next.id()) || !prev.componentType().equals(next.componentType()))) {
+                    long recStart = System.nanoTime();
+                    patches = reconciler.diffMountedRoot(next);
+                    reconcileNanos = System.nanoTime() - recStart;
                     long applyStart = System.nanoTime();
-                    if (mountedRootId != null) {
-                        renderer.unmountRoot(mountedRootId);
+                    replaceRoot(prev, next, patches);
+                    patchNanos = System.nanoTime() - applyStart;
+                } else if (prev != null && next != null) {
+                    long recStart = System.nanoTime();
+                    patches = reconciler.diff(prev, next);
+                    reconcileNanos = System.nanoTime() - recStart;
+                    if (!patches.isEmpty()) {
+                        long applyStart = System.nanoTime();
+                        applyPatches(patches);
+                        patchNanos = System.nanoTime() - applyStart;
                     }
-                    renderer.mountRoot(next.id(), next.componentType(), this::dispatchEvent);
-                    mountedRootId = next.id();
-                    applyPatches(patches);
-                    patchNanos = System.nanoTime() - applyStart;
-                } else if (!patches.isEmpty()) {
-                    long applyStart = System.nanoTime();
-                    applyPatches(patches);
-                    patchNanos = System.nanoTime() - applyStart;
                 }
 
                 long totalNanos = System.nanoTime() - frameStart;
@@ -268,6 +283,11 @@ public final class KairoRuntime {
         for (KairoId id : new ArrayList<>(nodeIndex.keySet())) {
             eventDispatcher.clearListeners(id);
         }
+        for (KairoId id : new ArrayList<>(nodeScopes.keySet())) {
+            eventDispatcher.clearListeners(id);
+            disposeNodeScope(id);
+        }
+        nodeScopes.clear();
         nodeIndex.clear();
         parentByNode.clear();
         styleTraces.clear();
@@ -278,6 +298,92 @@ public final class KairoRuntime {
         currentTree = null;
         lastLayoutResult = null;
         lastMetrics = RuntimeMetrics.ZERO;
+    }
+
+    private void mountNewRoot(VirtualNode root, List<RenderPatch> patches) {
+        renderer.mountRoot(root.id(), root.componentType(), this::dispatchEvent);
+        mountedRootId = root.id();
+        try {
+            applyPatches(patches);
+        } catch (RuntimeException ex) {
+            try {
+                renderer.unmountRoot(root.id());
+            } catch (RuntimeException cleanupEx) {
+                ex.addSuppressed(cleanupEx);
+            }
+            mountedRootId = null;
+            this.currentTree = null;
+            throw ex;
+        }
+    }
+
+    private void unmountCurrentRoot(KairoId prevRootId) {
+        clearNodeInteractionAndScope(prevRootId);
+        if (mountedRootId != null) {
+            renderer.unmountRoot(mountedRootId);
+            mountedRootId = null;
+        } else if (prevRootId != null) {
+            renderer.unmountRoot(prevRootId);
+        }
+    }
+
+    private void replaceRoot(VirtualNode prev, VirtualNode next, List<RenderPatch> patches) {
+        clearNodeInteractionAndScope(prev.id());
+        if (mountedRootId != null) {
+            renderer.unmountRoot(mountedRootId);
+            mountedRootId = null;
+        }
+        try {
+            mountNewRoot(next, patches);
+        } catch (RuntimeException ex) {
+            this.currentTree = null;
+            throw ex;
+        }
+    }
+
+    private void clearNodeInteractionAndScope(KairoId nodeId) {
+        if (nodeId == null) return;
+        pressedNodeIds.remove(nodeId);
+        if (Objects.equals(focusedNodeId, nodeId)) {
+            focusedNodeId = null;
+        }
+        if (Objects.equals(hoveredNodeId, nodeId)) {
+            hoveredNodeId = null;
+        }
+        disposeNodeScope(nodeId);
+        eventDispatcher.clearListeners(nodeId);
+    }
+
+    private Disposable registerNodeDisposable(KairoId nodeId, Disposable raw) {
+        if (raw == null) {
+            return () -> {};
+        }
+        LifecycleScope nodeScope = nodeScopes.computeIfAbsent(nodeId, ignored -> lifecycleScope.createChildScope());
+        AtomicBoolean disposed = new AtomicBoolean(false);
+        final Disposable[] holder = new Disposable[1];
+        Disposable managed = () -> {
+            if (disposed.compareAndSet(false, true)) {
+                try {
+                    raw.dispose();
+                } finally {
+                    nodeScope.releaseMountDisposable(holder[0]);
+                    if (nodeScope.activeMountDisposableCount() == 0
+                            && !nodeScope.isDestroyed()
+                            && nodeScopes.get(nodeId) == nodeScope) {
+                        disposeNodeScope(nodeId);
+                    }
+                }
+            }
+        };
+        holder[0] = managed;
+        return nodeScope.ownForMount(managed);
+    }
+
+    private void disposeNodeScope(KairoId nodeId) {
+        LifecycleScope scope = nodeScopes.remove(nodeId);
+        if (scope != null && !scope.isDestroyed()) {
+            scope.onDestroy();
+        }
     }
 
     public void destroy() {
@@ -445,6 +551,7 @@ public final class KairoRuntime {
             if (entry.lastSeenGeneration != renderGeneration) {
                 entry.inactiveFrames++;
                 if (entry.inactiveFrames > identityGraceFrames) {
+                    disposeNodeScope(entry.id);
                     eventDispatcher.clearListeners(entry.id);
                     it.remove();
                 }
@@ -485,7 +592,9 @@ public final class KairoRuntime {
         StableKey stableKey = resolveStableKey(ir);
         String idKey = stableKey != null
                 ? "key:" + ir.componentType() + ":" + stableKey.value()
-                : (ir.logicalId() != null ? "id:" + ir.logicalId() : "path:" + pathKey);
+                : (ir.logicalId() != null
+                    ? "id:" + ir.componentType() + ":" + ir.logicalId()
+                    : "path:" + ir.componentType() + ":" + pathKey);
         IdentityEntry idEntry = stableNodeIds.get(idKey);
         if (idEntry == null) {
             idEntry = new IdentityEntry(KairoId.next(ir.logicalId()), renderGeneration);

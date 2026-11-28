@@ -9,6 +9,7 @@ import java.util.List;
  */
 public final class LifecycleScope {
     private LifecycleState state = LifecycleState.CREATED;
+    private LifecycleScope parent;
     private final List<Disposable> mountDisposables = new ArrayList<>();
     private final List<Disposable> lifetimeDisposables = new ArrayList<>();
     private final List<LifecycleScope> children = new ArrayList<>();
@@ -26,6 +27,18 @@ public final class LifecycleScope {
 
     public boolean isDestroyed() {
         return state == LifecycleState.DESTROYED;
+    }
+
+    public int activeMountDisposableCount() {
+        int total = mountDisposables.size();
+        for (LifecycleScope child : children) {
+            total += child.activeMountDisposableCount();
+        }
+        return total;
+    }
+
+    public int childScopeCount() {
+        return children.size();
     }
 
     public void onMount() {
@@ -51,9 +64,9 @@ public final class LifecycleScope {
             return;
         }
         RuntimeException firstFailure = null;
-        for (int i = children.size() - 1; i >= 0; i--) {
+        for (LifecycleScope child : reverseCopy(children)) {
             try {
-                children.get(i).onUnmount();
+                child.onUnmount();
             } catch (RuntimeException ex) {
                 firstFailure = collectFailure(firstFailure, ex);
             }
@@ -65,9 +78,9 @@ public final class LifecycleScope {
                 firstFailure = collectFailure(firstFailure, ex);
             }
         }
-        for (int i = mountDisposables.size() - 1; i >= 0; i--) {
+        for (Disposable disposable : reverseCopy(mountDisposables)) {
             try {
-                mountDisposables.get(i).dispose();
+                disposable.dispose();
             } catch (RuntimeException ex) {
                 firstFailure = collectFailure(firstFailure, ex);
             }
@@ -91,9 +104,9 @@ public final class LifecycleScope {
         } catch (RuntimeException ex) {
             firstFailure = collectFailure(firstFailure, ex);
         }
-        for (int i = children.size() - 1; i >= 0; i--) {
+        for (LifecycleScope child : reverseCopy(children)) {
             try {
-                children.get(i).onDestroy();
+                child.onDestroy();
             } catch (RuntimeException ex) {
                 firstFailure = collectFailure(firstFailure, ex);
             }
@@ -106,9 +119,9 @@ public final class LifecycleScope {
                 firstFailure = collectFailure(firstFailure, ex);
             }
         }
-        for (int i = lifetimeDisposables.size() - 1; i >= 0; i--) {
+        for (Disposable disposable : reverseCopy(lifetimeDisposables)) {
             try {
-                lifetimeDisposables.get(i).dispose();
+                disposable.dispose();
             } catch (RuntimeException ex) {
                 firstFailure = collectFailure(firstFailure, ex);
             }
@@ -118,6 +131,11 @@ public final class LifecycleScope {
         unmountHooks.clear();
         destroyHooks.clear();
         state = LifecycleState.DESTROYED;
+        LifecycleScope p = this.parent;
+        this.parent = null;
+        if (p != null) {
+            p.children.remove(this);
+        }
         if (firstFailure != null) {
             throw firstFailure;
         }
@@ -129,6 +147,7 @@ public final class LifecycleScope {
             child.onDestroy();
             return child;
         }
+        child.parent = this;
         children.add(child);
         if (state == LifecycleState.MOUNTED) {
             child.onMount();
@@ -167,6 +186,11 @@ public final class LifecycleScope {
         return disposable;
     }
 
+    public boolean releaseMountDisposable(Disposable disposable) {
+        if (disposable == null) return false;
+        return mountDisposables.remove(disposable);
+    }
+
     public <T extends Disposable> T ownForLifetime(T disposable) {
         if (disposable == null) return null;
         if (state == LifecycleState.DESTROYED) {
@@ -177,10 +201,10 @@ public final class LifecycleScope {
         return disposable;
     }
 
-    private static List<Runnable> reverseCopy(List<Runnable> hooks) {
-        List<Runnable> rev = new ArrayList<>(hooks.size());
-        for (int i = hooks.size() - 1; i >= 0; i--) {
-            rev.add(hooks.get(i));
+    private static <E> List<E> reverseCopy(List<E> items) {
+        List<E> rev = new ArrayList<>(items.size());
+        for (int i = items.size() - 1; i >= 0; i--) {
+            rev.add(items.get(i));
         }
         return rev;
     }

@@ -33,6 +33,7 @@ public final class State<T> implements ReactiveSource {
         final Set<State<?>> dirtyStates = new LinkedHashSet<>();
         final Set<Derived<?>> dirtyDeriveds = new LinkedHashSet<>();
         final Map<Object, Runnable> coalescedCallbacks = new LinkedHashMap<>();
+        final Map<ObservableList<?>, List<ObservableList.Mutation<?>>> pendingListMutations = new LinkedHashMap<>();
         final Map<Derived<?>, Integer> derivedFlushCounts = new IdentityHashMap<>();
         boolean flushing;
 
@@ -42,6 +43,10 @@ public final class State<T> implements ReactiveSource {
 
         void scheduleCallback(Object owner, Object listener, Runnable callback) {
             coalescedCallbacks.put(new ListenerKey(owner, listener), callback);
+        }
+
+        void scheduleListMutation(ObservableList<?> list, ObservableList.Mutation<?> mutation) {
+            pendingListMutations.computeIfAbsent(list, ignored -> new ArrayList<>()).add(mutation);
         }
     }
 
@@ -210,10 +215,19 @@ public final class State<T> implements ReactiveSource {
         }
         TransactionBuffer tx = new TransactionBuffer();
         ACTIVE_TRANSACTION.set(tx);
+        boolean blockCompleted = false;
         try {
             block.run();
+            blockCompleted = true;
             flushTransaction(tx);
         } catch (RuntimeException ex) {
+            if (!blockCompleted) {
+                try {
+                    flushTransaction(tx);
+                } catch (RuntimeException flushEx) {
+                    ex.addSuppressed(flushEx);
+                }
+            }
             ReactiveRuntimeConfig.reportTransactionError(ex);
             throw ex;
         } finally {
@@ -226,7 +240,10 @@ public final class State<T> implements ReactiveSource {
         tx.flushing = true;
         try {
             int rounds = 0;
-            while (!tx.dirtyStates.isEmpty() || !tx.dirtyDeriveds.isEmpty() || !tx.coalescedCallbacks.isEmpty()) {
+            while (!tx.dirtyStates.isEmpty()
+                    || !tx.dirtyDeriveds.isEmpty()
+                    || !tx.coalescedCallbacks.isEmpty()
+                    || !tx.pendingListMutations.isEmpty()) {
                 if (++rounds > MAX_FLUSH_ROUNDS) {
                     throw new IllegalStateException("Reactive transaction exceeded maximum flush rounds (" + MAX_FLUSH_ROUNDS + "); check for cyclic state updates.");
                 }
@@ -252,15 +269,22 @@ public final class State<T> implements ReactiveSource {
                         }
                     }
                 }
-                if (tx.dirtyStates.isEmpty() && tx.dirtyDeriveds.isEmpty() && !tx.coalescedCallbacks.isEmpty()) {
+                if (tx.dirtyStates.isEmpty() && tx.dirtyDeriveds.isEmpty()
+                        && (!tx.coalescedCallbacks.isEmpty() || !tx.pendingListMutations.isEmpty())) {
                     List<Runnable> callbacks = new ArrayList<>(tx.coalescedCallbacks.values());
                     tx.coalescedCallbacks.clear();
+                    Map<ObservableList<?>, List<ObservableList.Mutation<?>>> listBatches =
+                            new LinkedHashMap<>(tx.pendingListMutations);
+                    tx.pendingListMutations.clear();
                     for (Runnable job : callbacks) {
                         try {
                             job.run();
                         } catch (RuntimeException ex) {
                             ReactiveRuntimeConfig.reportListenerError("State.transaction.listener", ex);
                         }
+                    }
+                    for (var entry : listBatches.entrySet()) {
+                        entry.getKey().deliverBatchUnchecked(entry.getValue());
                     }
                 }
             }
