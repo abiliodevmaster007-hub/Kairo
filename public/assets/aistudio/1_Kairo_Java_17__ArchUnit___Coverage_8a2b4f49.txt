@@ -1,0 +1,822 @@
+﻿2026-11-27T08:32:48.2493303Z Current runner version: '2.338.2'
+2026-11-27T08:32:48.2530119Z ##[group]Runner Image Provisioner
+2026-11-27T08:32:48.2531478Z Hosted Compute Agent
+2026-11-27T08:32:48.2532595Z Version: 20261111.635
+2026-11-27T08:32:48.2533797Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-27T08:32:48.2535030Z Build Date: 2026-11-11T01:49:01Z
+2026-11-27T08:32:48.2536212Z Worker ID: {790c7af6-648b-4cd4-83e9-46b9db23b07a}
+2026-11-27T08:32:48.2537438Z Region: eastus2
+2026-11-27T08:32:48.2538792Z Cloud: Azure
+2026-11-27T08:32:48.2539694Z ##[endgroup]
+2026-11-27T08:32:48.2542095Z ##[group]Operating System
+2026-11-27T08:32:48.2543230Z Ubuntu
+2026-11-27T08:32:48.2544214Z 26.04.1
+2026-11-27T08:32:48.2545188Z LTS
+2026-11-27T08:32:48.2546091Z ##[endgroup]
+2026-11-27T08:32:48.2547187Z ##[group]Runner Image
+2026-11-27T08:32:48.2548468Z Image: ubuntu-26.04
+2026-11-27T08:32:48.2549516Z Version: 20261122.9.1
+2026-11-27T08:32:48.2551603Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261122.9/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-27T08:32:48.2554454Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261122.9
+2026-11-27T08:32:48.2556259Z ##[endgroup]
+2026-11-27T08:32:48.2558602Z ##[group]GITHUB_TOKEN Permissions
+2026-11-27T08:32:48.2561294Z Contents: read
+2026-11-27T08:32:48.2562271Z Metadata: read
+2026-11-27T08:32:48.2563289Z Packages: read
+2026-11-27T08:32:48.2564281Z ##[endgroup]
+2026-11-27T08:32:48.2567427Z Secret source: Actions
+2026-11-27T08:32:48.2569156Z Cache mode: write
+2026-11-27T08:32:48.2570480Z Prepare workflow directory
+2026-11-27T08:32:48.3067012Z Prepare all required actions
+2026-11-27T08:32:48.3139993Z Getting action download info
+2026-11-27T08:32:48.5114128Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-27T08:32:48.6089015Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-11-27T08:32:48.8252232Z Download action repository 'gradle/actions@v4' (SHA:ed408507eac070d1f99cc633dbcf757c94c7933a)
+2026-11-27T08:32:49.4172191Z Complete job name: Kairo Java 17, ArchUnit & Coverage
+2026-11-27T08:32:49.5051872Z ##[group]Run actions/checkout@v4
+2026-11-27T08:32:49.5052800Z with:
+2026-11-27T08:32:49.5053293Z   repository: abiliodevmaster007-hub/Kairo
+2026-11-27T08:32:49.5056983Z   token: ***
+2026-11-27T08:32:49.5057448Z   ssh-strict: true
+2026-11-27T08:32:49.5058144Z   ssh-user: git
+2026-11-27T08:32:49.5058626Z   persist-credentials: true
+2026-11-27T08:32:49.5059141Z   clean: true
+2026-11-27T08:32:49.5059620Z   sparse-checkout-cone-mode: true
+2026-11-27T08:32:49.5060167Z   fetch-depth: 1
+2026-11-27T08:32:49.5060625Z   fetch-tags: false
+2026-11-27T08:32:49.5061090Z   show-progress: true
+2026-11-27T08:32:49.5061565Z   lfs: false
+2026-11-27T08:32:49.5062009Z   submodules: false
+2026-11-27T08:32:49.5062492Z   set-safe-directory: true
+2026-11-27T08:32:49.5063021Z   allow-unsafe-pr-checkout: false
+2026-11-27T08:32:49.5063885Z ##[endgroup]
+2026-11-27T08:32:49.9627410Z Syncing repository: abiliodevmaster007-hub/Kairo
+2026-11-27T08:32:49.9631248Z ##[group]Getting Git version info
+2026-11-27T08:32:49.9633250Z Working directory is '/home/runner/work/Kairo/Kairo'
+2026-11-27T08:32:49.9635145Z [command]/usr/bin/git version
+2026-11-27T08:32:49.9648611Z git version 2.56.1
+2026-11-27T08:32:49.9670608Z ##[endgroup]
+2026-11-27T08:32:49.9686587Z Temporarily overriding HOME='/home/runner/work/_temp/80628645-78a0-4633-b361-af1d552fa4d9' before making global git config changes
+2026-11-27T08:32:49.9691687Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-27T08:32:49.9694808Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Kairo/Kairo
+2026-11-27T08:32:49.9767940Z Deleting the contents of '/home/runner/work/Kairo/Kairo'
+2026-11-27T08:32:49.9772052Z ##[group]Initializing the repository
+2026-11-27T08:32:49.9776340Z [command]/usr/bin/git init /home/runner/work/Kairo/Kairo
+2026-11-27T08:32:49.9905707Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-27T08:32:49.9909367Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-27T08:32:49.9912169Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-27T08:32:49.9914420Z hint: call:
+2026-11-27T08:32:49.9915528Z hint:
+2026-11-27T08:32:49.9917338Z hint: 	git config --global init.defaultBranch <name>
+2026-11-27T08:32:49.9920048Z hint:
+2026-11-27T08:32:49.9921922Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-27T08:32:49.9925360Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-27T08:32:49.9927397Z hint:
+2026-11-27T08:32:49.9929086Z hint: 	git branch -m <name>
+2026-11-27T08:32:49.9930544Z hint:
+2026-11-27T08:32:49.9932348Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-27T08:32:49.9934934Z Initialized empty Git repository in /home/runner/work/Kairo/Kairo/.git/
+2026-11-27T08:32:49.9939467Z [command]/usr/bin/git remote add origin https://github.com/abiliodevmaster007-hub/Kairo
+2026-11-27T08:32:49.9995140Z ##[endgroup]
+2026-11-27T08:32:49.9998652Z ##[group]Disabling automatic garbage collection
+2026-11-27T08:32:50.0001303Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-27T08:32:50.0038397Z ##[endgroup]
+2026-11-27T08:32:50.0041743Z ##[group]Setting up auth
+2026-11-27T08:32:50.0045225Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-27T08:32:50.0087968Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-27T08:32:50.0639775Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-27T08:32:50.0685899Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-27T08:32:50.0972915Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-27T08:32:50.1008811Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-27T08:32:50.1277358Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-27T08:32:50.1317547Z ##[endgroup]
+2026-11-27T08:32:50.1327042Z ##[group]Fetching the repository
+2026-11-27T08:32:50.1330860Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0f5bec497579a6a8b7472577a85371bfe6a6c097:refs/remotes/origin/main
+2026-11-27T08:32:50.4589589Z From https://github.com/abiliodevmaster007-hub/Kairo
+2026-11-27T08:32:50.4591916Z  * [new ref]         0f5bec497579a6a8b7472577a85371bfe6a6c097 -> origin/main
+2026-11-27T08:32:50.4597366Z ##[endgroup]
+2026-11-27T08:32:50.4599905Z ##[group]Determining the checkout info
+2026-11-27T08:32:50.4602060Z ##[endgroup]
+2026-11-27T08:32:50.4605272Z [command]/usr/bin/git sparse-checkout disable
+2026-11-27T08:32:50.4661745Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-27T08:32:50.4693414Z ##[group]Checking out the ref
+2026-11-27T08:32:50.4696897Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-11-27T08:32:50.5002300Z Switched to a new branch 'main'
+2026-11-27T08:32:50.5008944Z branch 'main' set up to track 'origin/main'.
+2026-11-27T08:32:50.5015958Z ##[endgroup]
+2026-11-27T08:32:50.5063493Z [command]/usr/bin/git log -1 --format=%H
+2026-11-27T08:32:50.5088008Z 0f5bec497579a6a8b7472577a85371bfe6a6c097
+2026-11-27T08:32:50.5526049Z ##[group]Run actions/setup-java@v4
+2026-11-27T08:32:50.5527256Z with:
+2026-11-27T08:32:50.5528287Z   distribution: temurin
+2026-11-27T08:32:50.5529322Z   java-version: 17
+2026-11-27T08:32:50.5530282Z   java-package: jdk
+2026-11-27T08:32:50.5531468Z   check-latest: false
+2026-11-27T08:32:50.5532470Z   server-id: github
+2026-11-27T08:32:50.5533470Z   server-username: GITHUB_ACTOR
+2026-11-27T08:32:50.5534630Z   server-password: GITHUB_TOKEN
+2026-11-27T08:32:50.5535781Z   overwrite-settings: true
+2026-11-27T08:32:50.5536878Z   job-status: success
+2026-11-27T08:32:50.5546050Z   token: ***
+2026-11-27T08:32:50.5546954Z ##[endgroup]
+2026-11-27T08:32:50.7382155Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-11-27T08:32:50.7392434Z ##[group]Installed distributions
+2026-11-27T08:32:50.7438113Z Resolved Java 17.0.21+2 from tool-cache
+2026-11-27T08:32:50.7439522Z Setting Java 17.0.21+2 as the default
+2026-11-27T08:32:50.7448965Z (node:2377) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-27T08:32:50.7452798Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-27T08:32:50.7454737Z Creating toolchains.xml for JDK version 17 from temurin
+2026-11-27T08:32:50.7529241Z Writing to /home/runner/.m2/toolchains.xml
+2026-11-27T08:32:50.7531239Z 
+2026-11-27T08:32:50.7532031Z Java configuration:
+2026-11-27T08:32:50.7533437Z   Distribution: temurin
+2026-11-27T08:32:50.7535494Z   Version: 17.0.21+2
+2026-11-27T08:32:50.7539104Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:32:50.7542240Z 
+2026-11-27T08:32:50.7544626Z ##[endgroup]
+2026-11-27T08:32:50.7561318Z Creating settings.xml with server-id: github
+2026-11-27T08:32:50.7594347Z Writing to /home/runner/.m2/settings.xml
+2026-11-27T08:32:50.8161607Z ##[group]Run gradle/actions/setup-gradle@v4
+2026-11-27T08:32:50.8162811Z with:
+2026-11-27T08:32:50.8163630Z   gradle-version: 8.10.2
+2026-11-27T08:32:50.8164601Z   cache-disabled: false
+2026-11-27T08:32:50.8165551Z   cache-read-only: false
+2026-11-27T08:32:50.8166514Z   cache-write-only: false
+2026-11-27T08:32:50.8167522Z   cache-overwrite-existing: false
+2026-11-27T08:32:50.8168925Z   cache-cleanup: on-success
+2026-11-27T08:32:50.8170093Z   gradle-home-cache-includes: caches
+notifications
+
+2026-11-27T08:32:50.8171369Z   add-job-summary: always
+2026-11-27T08:32:50.8172401Z   add-job-summary-as-pr-comment: never
+2026-11-27T08:32:50.8173547Z   dependency-graph: disabled
+2026-11-27T08:32:50.8174765Z   dependency-graph-report-dir: dependency-graph-reports
+2026-11-27T08:32:50.8176217Z   dependency-graph-continue-on-failure: true
+2026-11-27T08:32:50.8177442Z   build-scan-publish: false
+2026-11-27T08:32:50.8178691Z   validate-wrappers: true
+2026-11-27T08:32:50.8179763Z   allow-snapshot-wrappers: false
+2026-11-27T08:32:50.8180881Z   gradle-home-cache-strict-match: false
+2026-11-27T08:32:50.8182049Z   workflow-job-context: null
+2026-11-27T08:32:50.8190855Z   github-token: ***
+2026-11-27T08:32:50.8191738Z env:
+2026-11-27T08:32:50.8192910Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:32:50.8194838Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:32:50.8196395Z ##[endgroup]
+2026-11-27T08:32:52.2781670Z Merged default JDK locations into /home/runner/.m2/toolchains.xml
+2026-11-27T08:32:52.2783813Z Preparing cache for cleanup.
+2026-11-27T08:32:52.2787871Z ##[group]Restore Gradle state from cache
+2026-11-27T08:32:52.3774121Z Cache hit for restore-key: gradle-home-v1|Linux-X64|kairo-java[57653e25ac93e60a96b0495cd4133681]-a72e994544bbbf6084abc81aa246c2a9ea314b41
+2026-11-27T08:32:52.5965191Z Received 4015560 of 4015560 (100.0%), 23.9 MBs/sec
+2026-11-27T08:32:52.5966389Z Cache Size: ~4 MB (4015560 B)
+2026-11-27T08:32:52.6003676Z [command]/usr/bin/tar -xf /home/runner/work/_temp/8531734f-4ca6-4f56-9c95-e1fc1b5eaf21/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:52.6320587Z Cache restored successfully
+2026-11-27T08:32:52.6327307Z Restored cache entry with key gradle-home-v1|Linux-X64|kairo-java[57653e25ac93e60a96b0495cd4133681]-0f5bec497579a6a8b7472577a85371bfe6a6c097 to /home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle in 352ms
+2026-11-27T08:32:52.7107208Z Cache hit for: gradle-groovy-dsl-v1-ce030a1244acdfb45f9053be605fffbb
+2026-11-27T08:32:52.7114697Z Cache hit for: gradle-generated-gradle-jars-v1-2745217bed79d67c9856a7ed393e27bf
+2026-11-27T08:32:52.7160791Z Cache hit for: gradle-instrumented-jars-v1-6ec0a835e945dca87d07bb0aaba9388c
+2026-11-27T08:32:52.7663922Z Cache hit for: gradle-kotlin-dsl-v1-93411b7a5d9e97b15009306ac6164ca2
+2026-11-27T08:32:52.7678078Z Cache hit for: gradle-dependencies-v1-a9eafdcb1250cfd6df6dbf597eedc24b
+2026-11-27T08:32:52.8040374Z Received 76515 of 76515 (100.0%), 1.1 MBs/sec
+2026-11-27T08:32:52.8041196Z Cache Size: ~0 MB (76515 B)
+2026-11-27T08:32:52.9442399Z Received 112351 of 112351 (100.0%), 1.0 MBs/sec
+2026-11-27T08:32:52.9443707Z Cache Size: ~0 MB (112351 B)
+2026-11-27T08:32:52.9444095Z Received 128496 of 128496 (100.0%), 0.7 MBs/sec
+2026-11-27T08:32:52.9444653Z Cache Size: ~0 MB (128496 B)
+2026-11-27T08:32:53.0578862Z [command]/usr/bin/tar -xf /home/runner/work/_temp/7f0c20d5-8608-469c-ade9-d4a5072ccbb0/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:53.0699192Z [command]/usr/bin/tar -xf /home/runner/work/_temp/c4c17aa0-eab3-43a2-bf92-48df869a4304/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:53.0780695Z [command]/usr/bin/tar -xf /home/runner/work/_temp/784a8670-65d7-44d0-a4f1-bdb15db60196/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:53.0949468Z Cache restored successfully
+2026-11-27T08:32:53.1152371Z Received 39709003 of 39709003 (100.0%), 101.8 MBs/sec
+2026-11-27T08:32:53.1153666Z Cache Size: ~38 MB (39709003 B)
+2026-11-27T08:32:53.1155353Z Restored cache entry with key gradle-instrumented-jars-v1-6ec0a835e945dca87d07bb0aaba9388c to /home/runner/.gradle/caches/jars-*/*/ in 481ms
+2026-11-27T08:32:53.1384622Z Received 23576837 of 23576837 (100.0%), 64.1 MBs/sec
+2026-11-27T08:32:53.1386309Z Cache Size: ~22 MB (23576837 B)
+2026-11-27T08:32:53.1397999Z Cache restored successfully
+2026-11-27T08:32:53.1399824Z Restored cache entry with key gradle-groovy-dsl-v1-ce030a1244acdfb45f9053be605fffbb to /home/runner/.gradle/caches/*/groovy-dsl/*/ in 505ms
+2026-11-27T08:32:53.1443705Z [command]/usr/bin/tar -xf /home/runner/work/_temp/9273ac6e-d1ee-4dd8-bebf-0275c11ded18/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:53.1548663Z [command]/usr/bin/tar -xf /home/runner/work/_temp/1cd74b89-aced-4aab-b9b0-31586060da89/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:53.1637611Z Cache restored successfully
+2026-11-27T08:32:53.1647555Z Restored cache entry with key gradle-kotlin-dsl-v1-93411b7a5d9e97b15009306ac6164ca2 to /home/runner/.gradle/caches/*/kotlin-dsl/accessors/*/,/home/runner/.gradle/caches/*/kotlin-dsl/scripts/*/ in 529ms
+2026-11-27T08:32:53.2248750Z Cache restored successfully
+2026-11-27T08:32:53.2263004Z Restored cache entry with key gradle-dependencies-v1-a9eafdcb1250cfd6df6dbf597eedc24b to /home/runner/.gradle/caches/modules-*/files-*/*/*/*/* in 593ms
+2026-11-27T08:32:53.4116712Z Cache restored successfully
+2026-11-27T08:32:53.4139752Z Restored cache entry with key gradle-generated-gradle-jars-v1-2745217bed79d67c9856a7ed393e27bf to /home/runner/.gradle/caches/8.10.2/generated-gradle-jars/gradle-api-8.10.2.jar in 780ms
+2026-11-27T08:32:53.4224231Z ##[endgroup]
+2026-11-27T08:32:53.4372012Z ##[group]All Gradle Wrapper jars are valid
+2026-11-27T08:32:53.4372740Z 
+2026-11-27T08:32:53.4373202Z ##[endgroup]
+2026-11-27T08:32:53.5034019Z ##[group]Provision Gradle 8.10.2
+2026-11-27T08:32:57.1706538Z Cache hit for: gradle-8.10.2
+2026-11-27T08:32:57.7113281Z Received 136494016 of 136494016 (100.0%), 248.4 MBs/sec
+2026-11-27T08:32:57.7115401Z Cache Size: ~130 MB (136494016 B)
+2026-11-27T08:32:57.7138216Z [command]/usr/bin/tar -xf /home/runner/work/_temp/f8633ed3-429d-4137-8c89-1e1dbad2fcd4/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:32:57.9015088Z Cache restored successfully
+2026-11-27T08:32:57.9075879Z Restored Gradle distribution gradle-8.10.2 from cache to /home/runner/work/_temp/.gradle-actions/gradle-installations/downloads/gradle-8.10.2-bin.zip
+2026-11-27T08:32:57.9094975Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/.gradle-actions/gradle-installations/downloads/gradle-8.10.2-bin.zip
+2026-11-27T08:32:58.8983465Z Extracted Gradle 8.10.2 to /home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.10.2
+2026-11-27T08:32:58.8985935Z Provisioned Gradle executable /home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.10.2/bin/gradle
+2026-11-27T08:32:58.8987936Z ##[endgroup]
+2026-11-27T08:32:58.9333866Z ##[group]Run gradle :tests:architecture-tests:test --no-daemon
+2026-11-27T08:32:58.9334445Z [36;1mgradle :tests:architecture-tests:test --no-daemon[0m
+2026-11-27T08:32:58.9371633Z shell: /usr/bin/bash -e {0}
+2026-11-27T08:32:58.9371949Z env:
+2026-11-27T08:32:58.9372315Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:32:58.9372878Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:32:58.9373349Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-11-27T08:32:58.9373703Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-11-27T08:32:58.9374050Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-11-27T08:32:58.9374401Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-11-27T08:32:58.9374889Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-11-27T08:32:58.9375427Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-11-27T08:32:58.9375834Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-11-27T08:32:58.9376151Z ##[endgroup]
+2026-11-27T08:32:59.7754651Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-11-27T08:33:01.3721547Z Daemon will be stopped at the end of the build 
+2026-11-27T08:33:02.9722098Z Calculating task graph as no cached configuration is available for tasks: :tests:architecture-tests:test
+2026-11-27T08:33:13.5743098Z > Task :libraries:kairo-annotations:processResources NO-SOURCE
+2026-11-27T08:33:13.6768931Z > Task :libraries:kairo-async:processResources NO-SOURCE
+2026-11-27T08:33:13.6802123Z > Task :libraries:kairo-components-api:processResources NO-SOURCE
+2026-11-27T08:33:13.6803743Z > Task :libraries:kairo-components-input:processResources NO-SOURCE
+2026-11-27T08:33:13.6804904Z > Task :libraries:kairo-components-form:processResources NO-SOURCE
+2026-11-27T08:33:13.6812920Z > Task :libraries:kairo-core:processResources NO-SOURCE
+2026-11-27T08:33:13.6814195Z > Task :libraries:kairo-components-basic:processResources NO-SOURCE
+2026-11-27T08:33:13.6815330Z > Task :libraries:kairo-components-list:processResources NO-SOURCE
+2026-11-27T08:33:13.6817972Z > Task :libraries:kairo-css-parser:processResources NO-SOURCE
+2026-11-27T08:33:13.6819102Z > Task :libraries:kairo-ir:processResources NO-SOURCE
+2026-11-27T08:33:13.6821395Z > Task :libraries:kairo-events:processResources NO-SOURCE
+2026-11-27T08:33:13.6822657Z > Task :libraries:kairo-layout:processResources NO-SOURCE
+2026-11-27T08:33:13.6823645Z > Task :libraries:kairo-lifecycle:processResources NO-SOURCE
+2026-11-27T08:33:13.6824645Z > Task :libraries:kairo-navigation:processResources NO-SOURCE
+2026-11-27T08:33:13.6838160Z > Task :libraries:kairo-resources:processResources NO-SOURCE
+2026-11-27T08:33:13.6839229Z > Task :libraries:kairo-runtime:processResources NO-SOURCE
+2026-11-27T08:33:13.6840261Z > Task :libraries:kairo-renderer-api:processResources NO-SOURCE
+2026-11-27T08:33:13.6841249Z > Task :libraries:kairo-style:processResources NO-SOURCE
+2026-11-27T08:33:13.6842193Z > Task :tests:architecture-tests:compileJava NO-SOURCE
+2026-11-27T08:33:13.6852346Z > Task :libraries:kairo-state:processResources NO-SOURCE
+2026-11-27T08:33:13.6853426Z > Task :tests:architecture-tests:processTestResources NO-SOURCE
+2026-11-27T08:33:13.6854457Z > Task :tests:architecture-tests:processResources NO-SOURCE
+2026-11-27T08:33:13.6855392Z > Task :tests:architecture-tests:classes UP-TO-DATE
+2026-11-27T08:33:13.6856338Z > Task :libraries:kairo-annotations:compileJava FROM-CACHE
+2026-11-27T08:33:13.6857319Z > Task :libraries:kairo-annotations:classes UP-TO-DATE
+2026-11-27T08:33:13.7739307Z > Task :libraries:kairo-core:compileJava FROM-CACHE
+2026-11-27T08:33:13.7747440Z > Task :libraries:kairo-core:classes UP-TO-DATE
+2026-11-27T08:33:13.7748539Z > Task :libraries:kairo-annotations:jar
+2026-11-27T08:33:13.7749283Z > Task :libraries:kairo-core:jar
+2026-11-27T08:33:13.8770947Z > Task :libraries:kairo-ir:compileJava FROM-CACHE
+2026-11-27T08:33:13.8777970Z > Task :libraries:kairo-ir:classes UP-TO-DATE
+2026-11-27T08:33:13.8808319Z > Task :libraries:kairo-resources:compileJava FROM-CACHE
+2026-11-27T08:33:13.8838288Z > Task :libraries:kairo-lifecycle:compileJava FROM-CACHE
+2026-11-27T08:33:13.8865604Z > Task :libraries:kairo-ir:jar
+2026-11-27T08:33:13.8889474Z > Task :libraries:kairo-lifecycle:classes UP-TO-DATE
+2026-11-27T08:33:13.8918247Z > Task :libraries:kairo-css-parser:compileJava FROM-CACHE
+2026-11-27T08:33:13.8929991Z > Task :libraries:kairo-lifecycle:jar
+2026-11-27T08:33:13.8967331Z > Task :libraries:kairo-css-parser:classes UP-TO-DATE
+2026-11-27T08:33:13.8968378Z > Task :libraries:kairo-events:compileJava FROM-CACHE
+2026-11-27T08:33:13.8969170Z > Task :libraries:kairo-events:classes UP-TO-DATE
+2026-11-27T08:33:13.8969863Z > Task :libraries:kairo-state:compileJava FROM-CACHE
+2026-11-27T08:33:13.8970568Z > Task :libraries:kairo-style:compileJava FROM-CACHE
+2026-11-27T08:33:13.8971229Z > Task :libraries:kairo-css-parser:jar
+2026-11-27T08:33:13.8971853Z > Task :libraries:kairo-resources:classes UP-TO-DATE
+2026-11-27T08:33:13.8972468Z > Task :libraries:kairo-events:jar
+2026-11-27T08:33:13.8973059Z > Task :libraries:kairo-state:classes UP-TO-DATE
+2026-11-27T08:33:13.9764178Z > Task :libraries:kairo-resources:jar
+2026-11-27T08:33:13.9768497Z > Task :libraries:kairo-style:classes UP-TO-DATE
+2026-11-27T08:33:13.9798336Z > Task :libraries:kairo-state:jar
+2026-11-27T08:33:13.9800503Z > Task :libraries:kairo-style:jar
+2026-11-27T08:33:13.9828490Z > Task :libraries:kairo-async:compileJava FROM-CACHE
+2026-11-27T08:33:13.9858823Z > Task :libraries:kairo-async:classes UP-TO-DATE
+2026-11-27T08:33:13.9870074Z > Task :libraries:kairo-layout:compileJava FROM-CACHE
+2026-11-27T08:33:13.9870799Z > Task :libraries:kairo-layout:classes UP-TO-DATE
+2026-11-27T08:33:13.9871497Z > Task :libraries:kairo-async:jar
+2026-11-27T08:33:13.9872130Z > Task :libraries:kairo-layout:jar
+2026-11-27T08:33:14.0731823Z > Task :libraries:kairo-renderer-api:compileJava FROM-CACHE
+2026-11-27T08:33:14.0758501Z > Task :libraries:kairo-renderer-api:classes UP-TO-DATE
+2026-11-27T08:33:14.0788977Z > Task :libraries:kairo-components-api:compileJava FROM-CACHE
+2026-11-27T08:33:14.0808589Z > Task :libraries:kairo-components-api:classes UP-TO-DATE
+2026-11-27T08:33:14.0818460Z > Task :libraries:kairo-components-api:jar
+2026-11-27T08:33:14.0848368Z > Task :libraries:kairo-components-basic:compileJava FROM-CACHE
+2026-11-27T08:33:14.0878683Z > Task :libraries:kairo-components-input:compileJava FROM-CACHE
+2026-11-27T08:33:14.0883746Z > Task :libraries:kairo-components-basic:classes UP-TO-DATE
+2026-11-27T08:33:14.0884792Z > Task :libraries:kairo-components-input:classes UP-TO-DATE
+2026-11-27T08:33:14.0912074Z > Task :libraries:kairo-components-form:compileJava FROM-CACHE
+2026-11-27T08:33:14.0958641Z > Task :libraries:kairo-components-form:classes UP-TO-DATE
+2026-11-27T08:33:14.0988310Z > Task :libraries:kairo-components-list:compileJava FROM-CACHE
+2026-11-27T08:33:14.1004612Z > Task :libraries:kairo-components-list:classes UP-TO-DATE
+2026-11-27T08:33:14.1025671Z > Task :libraries:kairo-components-input:jar
+2026-11-27T08:33:14.1026198Z > Task :libraries:kairo-components-basic:jar
+2026-11-27T08:33:14.1027001Z > Task :libraries:kairo-components-form:jar
+2026-11-27T08:33:14.1748018Z > Task :libraries:kairo-components-list:jar
+2026-11-27T08:33:14.1752510Z > Task :libraries:kairo-navigation:compileJava FROM-CACHE
+2026-11-27T08:33:14.1753462Z > Task :libraries:kairo-navigation:classes UP-TO-DATE
+2026-11-27T08:33:14.1754293Z > Task :libraries:kairo-renderer-api:jar
+2026-11-27T08:33:14.1755143Z > Task :libraries:kairo-runtime:compileJava FROM-CACHE
+2026-11-27T08:33:14.1756009Z > Task :libraries:kairo-runtime:classes UP-TO-DATE
+2026-11-27T08:33:14.1756807Z > Task :libraries:kairo-navigation:jar
+2026-11-27T08:33:14.1757522Z > Task :libraries:kairo-runtime:jar
+2026-11-27T08:33:14.2724247Z > Task :tests:architecture-tests:compileTestJava FROM-CACHE
+2026-11-27T08:33:14.2748571Z > Task :tests:architecture-tests:testClasses UP-TO-DATE
+2026-11-27T08:33:14.2778728Z > Task :tests:architecture-tests:test FROM-CACHE
+2026-11-27T08:33:14.2779765Z > Task :tests:architecture-tests:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:14.3739352Z gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1795768384487.json
+2026-11-27T08:33:14.3768073Z 
+2026-11-27T08:33:14.3770054Z BUILD SUCCESSFUL in 15s
+2026-11-27T08:33:14.3788521Z 41 actionable tasks: 19 executed, 22 from cache
+2026-11-27T08:33:14.3818970Z Configuration cache entry stored.
+2026-11-27T08:33:14.5084979Z ##[group]Run gradle check jacocoTestReport --no-daemon
+2026-11-27T08:33:14.5085479Z [36;1mgradle check jacocoTestReport --no-daemon[0m
+2026-11-27T08:33:14.5118845Z shell: /usr/bin/bash -e {0}
+2026-11-27T08:33:14.5119155Z env:
+2026-11-27T08:33:14.5119534Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:33:14.5120132Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:33:14.5120646Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-11-27T08:33:14.5121030Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-11-27T08:33:14.5121401Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-11-27T08:33:14.5121762Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-11-27T08:33:14.5122276Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-11-27T08:33:14.5122832Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-11-27T08:33:14.5123245Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-11-27T08:33:14.5123570Z ##[endgroup]
+2026-11-27T08:33:15.2090076Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-11-27T08:33:16.3053702Z Daemon will be stopped at the end of the build 
+2026-11-27T08:33:17.6059730Z Calculating task graph as no cached configuration is available for tasks: check jacocoTestReport
+2026-11-27T08:33:24.8130961Z > Task :examples:compileJava NO-SOURCE
+2026-11-27T08:33:24.8220754Z > Task :processTestResources NO-SOURCE
+2026-11-27T08:33:24.8221624Z > Task :compileJava NO-SOURCE
+2026-11-27T08:33:24.8222291Z > Task :processResources NO-SOURCE
+2026-11-27T08:33:24.8222932Z > Task :classes UP-TO-DATE
+2026-11-27T08:33:24.8223575Z > Task :examples:processTestResources NO-SOURCE
+2026-11-27T08:33:24.8224338Z > Task :examples:processResources NO-SOURCE
+2026-11-27T08:33:24.8226396Z > Task :examples:classes UP-TO-DATE
+2026-11-27T08:33:24.8255704Z > Task :compileTestJava NO-SOURCE
+2026-11-27T08:33:24.8268480Z > Task :testClasses UP-TO-DATE
+2026-11-27T08:33:24.8291880Z > Task :libraries:processResources NO-SOURCE
+2026-11-27T08:33:24.8292563Z > Task :examples:compileTestJava NO-SOURCE
+2026-11-27T08:33:24.8293155Z > Task :examples:testClasses UP-TO-DATE
+2026-11-27T08:33:24.8293767Z > Task :libraries:compileJava NO-SOURCE
+2026-11-27T08:33:24.8294449Z > Task :libraries:processTestResources NO-SOURCE
+2026-11-27T08:33:24.8295129Z > Task :libraries:classes UP-TO-DATE
+2026-11-27T08:33:24.8295714Z > Task :test NO-SOURCE
+2026-11-27T08:33:24.8296675Z > Task :check UP-TO-DATE
+2026-11-27T08:33:24.8297143Z > Task :examples:test NO-SOURCE
+2026-11-27T08:33:24.8297822Z > Task :tests:compileJava NO-SOURCE
+2026-11-27T08:33:24.8298394Z > Task :examples:check UP-TO-DATE
+2026-11-27T08:33:24.8298971Z > Task :libraries:compileTestJava NO-SOURCE
+2026-11-27T08:33:24.8299586Z > Task :libraries:testClasses UP-TO-DATE
+2026-11-27T08:33:24.8300221Z > Task :tests:processTestResources NO-SOURCE
+2026-11-27T08:33:24.8300813Z > Task :tools:compileJava NO-SOURCE
+2026-11-27T08:33:24.8301339Z > Task :libraries:test NO-SOURCE
+2026-11-27T08:33:24.8301802Z > Task :libraries:check UP-TO-DATE
+2026-11-27T08:33:24.8302316Z > Task :tools:processTestResources NO-SOURCE
+2026-11-27T08:33:24.8302857Z > Task :tools:processResources NO-SOURCE
+2026-11-27T08:33:24.8303407Z > Task :examples:gallery:processResources NO-SOURCE
+2026-11-27T08:33:24.8303994Z > Task :tests:processResources NO-SOURCE
+2026-11-27T08:33:24.8304490Z > Task :tests:classes UP-TO-DATE
+2026-11-27T08:33:24.8304952Z > Task :tools:classes UP-TO-DATE
+2026-11-27T08:33:24.9080329Z > Task :examples:gallery:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9178597Z > Task :tests:compileTestJava NO-SOURCE
+2026-11-27T08:33:24.9198845Z > Task :tests:testClasses UP-TO-DATE
+2026-11-27T08:33:24.9199822Z > Task :tools:compileTestJava NO-SOURCE
+2026-11-27T08:33:24.9200880Z > Task :tools:testClasses UP-TO-DATE
+2026-11-27T08:33:24.9202132Z > Task :tests:test NO-SOURCE
+2026-11-27T08:33:24.9202894Z > Task :tests:check UP-TO-DATE
+2026-11-27T08:33:24.9203743Z > Task :libraries:kairo-annotations:processResources NO-SOURCE
+2026-11-27T08:33:24.9204714Z > Task :tools:test NO-SOURCE
+2026-11-27T08:33:24.9205393Z > Task :tools:check UP-TO-DATE
+2026-11-27T08:33:24.9206212Z > Task :libraries:kairo-async:processResources NO-SOURCE
+2026-11-27T08:33:24.9207252Z > Task :libraries:kairo-components-api:processResources NO-SOURCE
+2026-11-27T08:33:24.9208575Z > Task :libraries:kairo-components-form:processResources NO-SOURCE
+2026-11-27T08:33:24.9209695Z > Task :libraries:kairo-components-list:processResources NO-SOURCE
+2026-11-27T08:33:24.9210726Z > Task :libraries:kairo-core:processResources NO-SOURCE
+2026-11-27T08:33:24.9211739Z > Task :libraries:kairo-components-basic:processResources NO-SOURCE
+2026-11-27T08:33:24.9212825Z > Task :libraries:kairo-components-input:processResources NO-SOURCE
+2026-11-27T08:33:24.9213875Z > Task :libraries:kairo-css-parser:processResources NO-SOURCE
+2026-11-27T08:33:24.9214833Z > Task :libraries:kairo-ir:processResources NO-SOURCE
+2026-11-27T08:33:24.9215790Z > Task :libraries:kairo-inspector:processResources NO-SOURCE
+2026-11-27T08:33:24.9216762Z > Task :libraries:kairo-layout:processResources NO-SOURCE
+2026-11-27T08:33:24.9217880Z > Task :libraries:kairo-lifecycle:processResources NO-SOURCE
+2026-11-27T08:33:24.9218858Z > Task :libraries:kairo-events:processResources NO-SOURCE
+2026-11-27T08:33:24.9219910Z > Task :libraries:kairo-navigation:processResources NO-SOURCE
+2026-11-27T08:33:24.9220925Z > Task :libraries:kairo-renderer-api:processResources NO-SOURCE
+2026-11-27T08:33:24.9221923Z > Task :libraries:kairo-runtime:processResources NO-SOURCE
+2026-11-27T08:33:24.9223284Z > Task :libraries:kairo-resources:processResources NO-SOURCE
+2026-11-27T08:33:24.9224233Z > Task :libraries:kairo-state:processResources NO-SOURCE
+2026-11-27T08:33:24.9225155Z > Task :libraries:kairo-style:processResources NO-SOURCE
+2026-11-27T08:33:24.9228667Z > Task :libraries:kairo-xml:processResources NO-SOURCE
+2026-11-27T08:33:24.9262466Z > Task :libraries:kairo-testkit:processResources NO-SOURCE
+2026-11-27T08:33:24.9263708Z > Task :examples:login-slice:processResources NO-SOURCE
+2026-11-27T08:33:24.9265031Z > Task :examples:login-slice:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9266274Z > Task :libraries:kairo-renderer-android:processResources NO-SOURCE
+2026-11-27T08:33:24.9267467Z > Task :libraries:kairo-annotations:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9268717Z > Task :libraries:kairo-async:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9270168Z > Task :libraries:kairo-components-api:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9271306Z > Task :libraries:kairo-components-basic:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9272471Z > Task :libraries:kairo-components-form:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9273639Z > Task :libraries:kairo-components-input:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9274754Z > Task :libraries:kairo-css-parser:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9275861Z > Task :libraries:kairo-components-list:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9276953Z > Task :libraries:kairo-inspector:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9278151Z > Task :libraries:kairo-core:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9279193Z > Task :libraries:kairo-events:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9280155Z > Task :libraries:kairo-ir:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9281159Z > Task :libraries:kairo-lifecycle:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9282439Z > Task :libraries:kairo-layout:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9287177Z > Task :libraries:kairo-navigation:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9288584Z > Task :libraries:kairo-renderer-android:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9290076Z > Task :libraries:kairo-platform-android:processResources NO-SOURCE
+2026-11-27T08:33:24.9291229Z > Task :libraries:kairo-renderer-api:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9292286Z > Task :libraries:kairo-resources:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9293428Z > Task :libraries:kairo-platform-android:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9294503Z > Task :libraries:kairo-state:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9295512Z > Task :libraries:kairo-runtime:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9296657Z > Task :libraries:kairo-style:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9297979Z > Task :libraries:kairo-testkit:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9299070Z > Task :libraries:kairo-xml:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9300068Z > Task :tests:architecture-tests:processTestResources NO-SOURCE
+2026-11-27T08:33:24.9301055Z > Task :tests:architecture-tests:processResources NO-SOURCE
+2026-11-27T08:33:24.9301997Z > Task :libraries:kairo-annotations:compileJava UP-TO-DATE
+2026-11-27T08:33:24.9302901Z > Task :libraries:kairo-annotations:classes UP-TO-DATE
+2026-11-27T08:33:24.9303804Z > Task :tests:architecture-tests:compileJava NO-SOURCE
+2026-11-27T08:33:24.9304815Z > Task :libraries:kairo-annotations:compileTestJava NO-SOURCE
+2026-11-27T08:33:24.9305767Z > Task :libraries:kairo-annotations:testClasses UP-TO-DATE
+2026-11-27T08:33:24.9306627Z > Task :libraries:kairo-annotations:test NO-SOURCE
+2026-11-27T08:33:24.9307557Z > Task :libraries:kairo-annotations:check UP-TO-DATE
+2026-11-27T08:33:24.9310686Z > Task :tests:architecture-tests:classes UP-TO-DATE
+2026-11-27T08:33:24.9311650Z > Task :libraries:kairo-annotations:jar UP-TO-DATE
+2026-11-27T08:33:24.9317297Z > Task :tests:runtime-tests:processResources NO-SOURCE
+2026-11-27T08:33:25.0075981Z > Task :tools:kairo-cli:processResources NO-SOURCE
+2026-11-27T08:33:25.0079468Z > Task :tests:runtime-tests:compileJava NO-SOURCE
+2026-11-27T08:33:25.0080572Z > Task :tests:runtime-tests:classes UP-TO-DATE
+2026-11-27T08:33:25.0086240Z > Task :examples:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.0087063Z > Task :libraries:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.0088046Z > Task :tests:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.0088805Z > Task :tools:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.0089667Z > Task :libraries:kairo-annotations:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.0090606Z > Task :tests:runtime-tests:processTestResources NO-SOURCE
+2026-11-27T08:33:25.0091512Z > Task :tools:kairo-cli:processTestResources NO-SOURCE
+2026-11-27T08:33:25.0092372Z > Task :libraries:kairo-core:compileJava UP-TO-DATE
+2026-11-27T08:33:25.0093181Z > Task :libraries:kairo-core:classes UP-TO-DATE
+2026-11-27T08:33:25.0094303Z > Task :libraries:kairo-core:jar UP-TO-DATE
+2026-11-27T08:33:25.0106071Z > Task :libraries:kairo-lifecycle:compileJava UP-TO-DATE
+2026-11-27T08:33:25.0106969Z > Task :libraries:kairo-ir:compileJava UP-TO-DATE
+2026-11-27T08:33:25.0107990Z > Task :libraries:kairo-resources:compileJava UP-TO-DATE
+2026-11-27T08:33:25.0110951Z > Task :libraries:kairo-css-parser:compileJava UP-TO-DATE
+2026-11-27T08:33:25.0118964Z > Task :libraries:kairo-events:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1084578Z > Task :libraries:kairo-state:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1104361Z > Task :libraries:kairo-style:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1105571Z > Task :libraries:kairo-async:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1106497Z > Task :libraries:kairo-async:classes UP-TO-DATE
+2026-11-27T08:33:25.1107954Z > Task :libraries:kairo-layout:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1109721Z > Task :libraries:kairo-async:jar UP-TO-DATE
+2026-11-27T08:33:25.1111021Z > Task :libraries:kairo-components-api:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1112613Z > Task :libraries:kairo-core:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.1113615Z > Task :libraries:kairo-renderer-api:compileJava UP-TO-DATE
+2026-11-27T08:33:25.1125150Z > Task :libraries:kairo-xml:compileJava FROM-CACHE
+2026-11-27T08:33:25.2068578Z > Task :libraries:kairo-components-basic:compileJava UP-TO-DATE
+2026-11-27T08:33:25.2095278Z > Task :libraries:kairo-components-list:compileJava UP-TO-DATE
+2026-11-27T08:33:25.2101205Z > Task :libraries:kairo-components-form:compileJava UP-TO-DATE
+2026-11-27T08:33:25.2103748Z > Task :libraries:kairo-components-api:classes UP-TO-DATE
+2026-11-27T08:33:25.2138587Z > Task :libraries:kairo-components-input:compileJava UP-TO-DATE
+2026-11-27T08:33:25.2168570Z > Task :libraries:kairo-components-basic:classes UP-TO-DATE
+2026-11-27T08:33:25.2170229Z > Task :libraries:kairo-components-api:jar UP-TO-DATE
+2026-11-27T08:33:25.2246485Z > Task :libraries:kairo-components-form:classes UP-TO-DATE
+2026-11-27T08:33:25.2278573Z > Task :libraries:kairo-components-basic:jar UP-TO-DATE
+2026-11-27T08:33:25.2279660Z > Task :libraries:kairo-components-input:classes UP-TO-DATE
+2026-11-27T08:33:25.2298641Z > Task :libraries:kairo-components-input:jar UP-TO-DATE
+2026-11-27T08:33:25.2299449Z > Task :libraries:kairo-components-list:classes UP-TO-DATE
+2026-11-27T08:33:25.2300229Z > Task :libraries:kairo-components-form:jar UP-TO-DATE
+2026-11-27T08:33:25.2300926Z > Task :libraries:kairo-css-parser:classes UP-TO-DATE
+2026-11-27T08:33:25.2301634Z > Task :libraries:kairo-components-list:jar UP-TO-DATE
+2026-11-27T08:33:25.2302295Z > Task :libraries:kairo-events:classes UP-TO-DATE
+2026-11-27T08:33:25.2303103Z > Task :libraries:kairo-navigation:compileJava UP-TO-DATE
+2026-11-27T08:33:25.2303826Z > Task :libraries:kairo-ir:classes UP-TO-DATE
+2026-11-27T08:33:25.2304597Z > Task :libraries:kairo-runtime:compileJava UP-TO-DATE
+2026-11-27T08:33:25.2305331Z > Task :libraries:kairo-events:jar UP-TO-DATE
+2026-11-27T08:33:25.2306076Z > Task :libraries:kairo-ir:jar UP-TO-DATE
+2026-11-27T08:33:25.2306846Z > Task :libraries:kairo-layout:classes UP-TO-DATE
+2026-11-27T08:33:25.2307846Z > Task :libraries:kairo-css-parser:jar UP-TO-DATE
+2026-11-27T08:33:25.2308712Z > Task :libraries:kairo-lifecycle:classes UP-TO-DATE
+2026-11-27T08:33:25.2309486Z > Task :libraries:kairo-lifecycle:jar UP-TO-DATE
+2026-11-27T08:33:25.2310336Z > Task :libraries:kairo-navigation:classes UP-TO-DATE
+2026-11-27T08:33:25.2311214Z > Task :libraries:kairo-layout:jar UP-TO-DATE
+2026-11-27T08:33:25.2312108Z > Task :libraries:kairo-renderer-api:classes UP-TO-DATE
+2026-11-27T08:33:25.2312973Z > Task :libraries:kairo-navigation:jar UP-TO-DATE
+2026-11-27T08:33:25.2313728Z > Task :libraries:kairo-resources:classes UP-TO-DATE
+2026-11-27T08:33:25.2314526Z > Task :libraries:kairo-renderer-api:jar UP-TO-DATE
+2026-11-27T08:33:25.2315286Z > Task :libraries:kairo-resources:jar UP-TO-DATE
+2026-11-27T08:33:25.2316146Z > Task :libraries:kairo-runtime:classes UP-TO-DATE
+2026-11-27T08:33:25.2317532Z > Task :libraries:kairo-state:classes UP-TO-DATE
+2026-11-27T08:33:25.2318523Z > Task :libraries:kairo-runtime:jar UP-TO-DATE
+2026-11-27T08:33:25.2319288Z > Task :libraries:kairo-style:classes UP-TO-DATE
+2026-11-27T08:33:25.2320097Z > Task :libraries:kairo-state:jar UP-TO-DATE
+2026-11-27T08:33:25.2320825Z > Task :libraries:kairo-xml:classes UP-TO-DATE
+2026-11-27T08:33:25.2321626Z > Task :libraries:kairo-style:jar UP-TO-DATE
+2026-11-27T08:33:25.3068140Z > Task :libraries:kairo-inspector:compileJava FROM-CACHE
+2026-11-27T08:33:25.3088808Z > Task :libraries:kairo-inspector:classes UP-TO-DATE
+2026-11-27T08:33:25.3089827Z > Task :libraries:kairo-testkit:compileJava FROM-CACHE
+2026-11-27T08:33:25.3090799Z > Task :libraries:kairo-renderer-android:compileJava FROM-CACHE
+2026-11-27T08:33:25.3091764Z > Task :examples:gallery:compileJava FROM-CACHE
+2026-11-27T08:33:25.3092590Z > Task :examples:gallery:classes UP-TO-DATE
+2026-11-27T08:33:25.3093432Z > Task :libraries:kairo-testkit:classes UP-TO-DATE
+2026-11-27T08:33:25.4099050Z > Task :libraries:kairo-testkit:jar
+2026-11-27T08:33:25.4118566Z > Task :libraries:kairo-xml:jar
+2026-11-27T08:33:25.4119514Z > Task :libraries:kairo-renderer-android:classes UP-TO-DATE
+2026-11-27T08:33:25.4120462Z > Task :libraries:kairo-inspector:jar
+2026-11-27T08:33:25.4121298Z > Task :examples:gallery:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.4122495Z > Task :examples:gallery:testClasses UP-TO-DATE
+2026-11-27T08:33:25.4123445Z > Task :libraries:kairo-async:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.4124338Z > Task :libraries:kairo-renderer-android:jar
+2026-11-27T08:33:25.4125190Z > Task :libraries:kairo-async:testClasses UP-TO-DATE
+2026-11-27T08:33:25.4126184Z > Task :libraries:kairo-components-api:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.4127211Z > Task :examples:login-slice:compileJava FROM-CACHE
+2026-11-27T08:33:25.4128310Z > Task :examples:login-slice:classes UP-TO-DATE
+2026-11-27T08:33:25.4129199Z > Task :examples:login-slice:compileTestJava NO-SOURCE
+2026-11-27T08:33:25.4130121Z > Task :examples:login-slice:testClasses UP-TO-DATE
+2026-11-27T08:33:25.4130971Z > Task :libraries:kairo-async:test FROM-CACHE
+2026-11-27T08:33:25.4131795Z > Task :libraries:kairo-async:check UP-TO-DATE
+2026-11-27T08:33:25.4132686Z > Task :libraries:kairo-components-api:testClasses UP-TO-DATE
+2026-11-27T08:33:25.4133539Z > Task :examples:gallery:test FROM-CACHE
+2026-11-27T08:33:25.4134249Z > Task :examples:gallery:check UP-TO-DATE
+2026-11-27T08:33:25.4134984Z > Task :examples:login-slice:jar
+2026-11-27T08:33:25.4135676Z > Task :examples:login-slice:test NO-SOURCE
+2026-11-27T08:33:25.4136428Z > Task :examples:login-slice:check UP-TO-DATE
+2026-11-27T08:33:25.5139016Z > Task :libraries:kairo-components-api:test FROM-CACHE
+2026-11-27T08:33:25.5248988Z > Task :libraries:kairo-components-api:check UP-TO-DATE
+2026-11-27T08:33:25.5250566Z > Task :libraries:kairo-components-basic:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.5251645Z > Task :libraries:kairo-components-basic:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5252958Z > Task :libraries:kairo-components-form:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.5253982Z > Task :libraries:kairo-components-form:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5254819Z > Task :libraries:kairo-components-input:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.5255333Z > Task :libraries:kairo-components-input:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5255878Z > Task :libraries:kairo-components-list:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.5256362Z > Task :libraries:kairo-components-list:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5256797Z > Task :libraries:kairo-components-form:test FROM-CACHE
+2026-11-27T08:33:25.5257215Z > Task :libraries:kairo-components-form:check UP-TO-DATE
+2026-11-27T08:33:25.5257614Z > Task :libraries:kairo-core:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5258570Z > Task :libraries:kairo-components-basic:test FROM-CACHE
+2026-11-27T08:33:25.5259326Z > Task :libraries:kairo-components-basic:check UP-TO-DATE
+2026-11-27T08:33:25.5260983Z > Task :libraries:kairo-components-input:test FROM-CACHE
+2026-11-27T08:33:25.5261790Z > Task :libraries:kairo-components-input:check UP-TO-DATE
+2026-11-27T08:33:25.5262598Z > Task :libraries:kairo-events:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.5263187Z > Task :libraries:kairo-events:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5263978Z > Task :libraries:kairo-css-parser:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.5264818Z > Task :libraries:kairo-css-parser:testClasses UP-TO-DATE
+2026-11-27T08:33:25.5265551Z > Task :libraries:kairo-core:test FROM-CACHE
+2026-11-27T08:33:25.5266238Z > Task :libraries:kairo-core:check UP-TO-DATE
+2026-11-27T08:33:25.6089477Z > Task :libraries:kairo-components-list:test FROM-CACHE
+2026-11-27T08:33:25.6128681Z > Task :libraries:kairo-components-list:check UP-TO-DATE
+2026-11-27T08:33:25.6158530Z > Task :libraries:kairo-ir:compileTestJava NO-SOURCE
+2026-11-27T08:33:25.6188385Z > Task :libraries:kairo-ir:testClasses UP-TO-DATE
+2026-11-27T08:33:25.6218390Z > Task :libraries:kairo-ir:test NO-SOURCE
+2026-11-27T08:33:25.6248316Z > Task :libraries:kairo-ir:check UP-TO-DATE
+2026-11-27T08:33:25.6264393Z > Task :libraries:kairo-css-parser:test FROM-CACHE
+2026-11-27T08:33:25.6265410Z > Task :libraries:kairo-css-parser:check UP-TO-DATE
+2026-11-27T08:33:25.6308696Z > Task :libraries:kairo-events:test FROM-CACHE
+2026-11-27T08:33:25.6364004Z > Task :libraries:kairo-events:check UP-TO-DATE
+2026-11-27T08:33:25.6388591Z > Task :libraries:kairo-inspector:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.6441510Z > Task :libraries:kairo-inspector:testClasses UP-TO-DATE
+2026-11-27T08:33:25.6478981Z > Task :libraries:kairo-lifecycle:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.6493997Z > Task :libraries:kairo-lifecycle:testClasses UP-TO-DATE
+2026-11-27T08:33:25.6495102Z > Task :libraries:kairo-navigation:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.6496113Z > Task :libraries:kairo-navigation:testClasses UP-TO-DATE
+2026-11-27T08:33:25.6497084Z > Task :libraries:kairo-inspector:test FROM-CACHE
+2026-11-27T08:33:25.6498785Z > Task :libraries:kairo-inspector:check UP-TO-DATE
+2026-11-27T08:33:25.6501163Z > Task :libraries:kairo-layout:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.6502359Z > Task :libraries:kairo-layout:testClasses UP-TO-DATE
+2026-11-27T08:33:25.6503304Z > Task :libraries:kairo-lifecycle:test FROM-CACHE
+2026-11-27T08:33:25.6504205Z > Task :libraries:kairo-lifecycle:check UP-TO-DATE
+2026-11-27T08:33:25.6507963Z > Task :libraries:kairo-navigation:test FROM-CACHE
+2026-11-27T08:33:25.6509124Z > Task :libraries:kairo-navigation:check UP-TO-DATE
+2026-11-27T08:33:25.6511506Z > Task :libraries:kairo-platform-android:compileJava FROM-CACHE
+2026-11-27T08:33:25.6539374Z > Task :libraries:kairo-platform-android:classes UP-TO-DATE
+2026-11-27T08:33:25.6540329Z > Task :libraries:kairo-layout:test FROM-CACHE
+2026-11-27T08:33:25.7119329Z > Task :libraries:kairo-layout:check UP-TO-DATE
+2026-11-27T08:33:25.7155911Z > Task :libraries:kairo-renderer-api:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7178388Z > Task :libraries:kairo-renderer-api:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7208524Z > Task :libraries:kairo-platform-android:compileTestJava NO-SOURCE
+2026-11-27T08:33:25.7209823Z > Task :libraries:kairo-platform-android:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7238580Z > Task :libraries:kairo-renderer-android:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7268494Z > Task :libraries:kairo-renderer-android:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7284641Z > Task :libraries:kairo-platform-android:test NO-SOURCE
+2026-11-27T08:33:25.7298477Z > Task :libraries:kairo-platform-android:check UP-TO-DATE
+2026-11-27T08:33:25.7328463Z > Task :libraries:kairo-renderer-api:test FROM-CACHE
+2026-11-27T08:33:25.7358396Z > Task :libraries:kairo-renderer-api:check UP-TO-DATE
+2026-11-27T08:33:25.7388402Z > Task :libraries:kairo-resources:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7389573Z > Task :libraries:kairo-resources:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7418502Z > Task :libraries:kairo-runtime:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7447353Z > Task :libraries:kairo-runtime:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7451676Z > Task :libraries:kairo-renderer-android:test FROM-CACHE
+2026-11-27T08:33:25.7455160Z > Task :libraries:kairo-renderer-android:check UP-TO-DATE
+2026-11-27T08:33:25.7508266Z > Task :libraries:kairo-runtime:test FROM-CACHE
+2026-11-27T08:33:25.7538463Z > Task :libraries:kairo-style:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7539527Z > Task :libraries:kairo-style:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7568410Z > Task :libraries:kairo-resources:test FROM-CACHE
+2026-11-27T08:33:25.7598307Z > Task :libraries:kairo-resources:check UP-TO-DATE
+2026-11-27T08:33:25.7628304Z > Task :libraries:kairo-runtime:check UP-TO-DATE
+2026-11-27T08:33:25.7629407Z > Task :libraries:kairo-state:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7658372Z > Task :libraries:kairo-state:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7688267Z > Task :libraries:kairo-style:test FROM-CACHE
+2026-11-27T08:33:25.7711915Z > Task :libraries:kairo-style:check UP-TO-DATE
+2026-11-27T08:33:25.7712946Z > Task :libraries:kairo-testkit:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7728638Z > Task :libraries:kairo-testkit:testClasses UP-TO-DATE
+2026-11-27T08:33:25.7729670Z > Task :libraries:kairo-xml:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.7730490Z > Task :libraries:kairo-state:test FROM-CACHE
+2026-11-27T08:33:25.7731516Z > Task :libraries:kairo-state:check UP-TO-DATE
+2026-11-27T08:33:25.7732316Z > Task :libraries:kairo-xml:testClasses UP-TO-DATE
+2026-11-27T08:33:25.8069309Z > Task :tests:architecture-tests:compileTestJava UP-TO-DATE
+2026-11-27T08:33:25.8075083Z > Task :tests:architecture-tests:testClasses UP-TO-DATE
+2026-11-27T08:33:25.8097509Z > Task :libraries:kairo-xml:test FROM-CACHE
+2026-11-27T08:33:25.8100631Z > Task :libraries:kairo-xml:check UP-TO-DATE
+2026-11-27T08:33:25.8101325Z > Task :libraries:kairo-testkit:test FROM-CACHE
+2026-11-27T08:33:25.8102009Z > Task :libraries:kairo-testkit:check UP-TO-DATE
+2026-11-27T08:33:25.8102727Z > Task :tests:architecture-tests:test UP-TO-DATE
+2026-11-27T08:33:25.8103407Z > Task :tests:architecture-tests:check UP-TO-DATE
+2026-11-27T08:33:25.8104115Z > Task :examples:login-slice:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.8105007Z > Task :tests:runtime-tests:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.8105736Z > Task :tests:runtime-tests:testClasses UP-TO-DATE
+2026-11-27T08:33:25.8106394Z > Task :tools:kairo-cli:compileJava FROM-CACHE
+2026-11-27T08:33:25.8107033Z > Task :tools:kairo-cli:classes UP-TO-DATE
+2026-11-27T08:33:25.8107870Z > Task :examples:gallery:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.8108628Z > Task :libraries:kairo-async:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.8109515Z > Task :libraries:kairo-components-api:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9061565Z > Task :libraries:kairo-components-basic:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9099458Z > Task :tools:kairo-cli:compileTestJava FROM-CACHE
+2026-11-27T08:33:25.9148437Z > Task :tests:runtime-tests:test FROM-CACHE
+2026-11-27T08:33:25.9228613Z > Task :tools:kairo-cli:testClasses UP-TO-DATE
+2026-11-27T08:33:25.9229528Z > Task :tests:runtime-tests:check UP-TO-DATE
+2026-11-27T08:33:25.9288897Z > Task :libraries:kairo-components-form:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9318773Z > Task :libraries:kairo-components-input:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9320039Z > Task :libraries:kairo-components-list:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9321555Z > Task :tools:kairo-cli:test FROM-CACHE
+2026-11-27T08:33:25.9322379Z > Task :tools:kairo-cli:check UP-TO-DATE
+2026-11-27T08:33:25.9323303Z > Task :libraries:kairo-core:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9324227Z > Task :libraries:kairo-ir:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.9325191Z > Task :libraries:kairo-css-parser:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9326185Z > Task :libraries:kairo-events:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9333135Z > Task :libraries:kairo-inspector:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9334795Z > Task :libraries:kairo-platform-android:jacocoTestReport SKIPPED
+2026-11-27T08:33:25.9335924Z > Task :libraries:kairo-lifecycle:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9336985Z > Task :libraries:kairo-navigation:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9338251Z > Task :libraries:kairo-layout:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9339553Z > Task :libraries:kairo-renderer-android:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:25.9340651Z > Task :libraries:kairo-renderer-api:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0078651Z > Task :libraries:kairo-resources:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0086247Z > Task :libraries:kairo-runtime:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0094958Z > Task :libraries:kairo-style:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0095900Z > Task :libraries:kairo-state:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0096816Z > Task :libraries:kairo-testkit:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0098139Z > Task :libraries:kairo-xml:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0099166Z > Task :tests:runtime-tests:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0100226Z > Task :tests:architecture-tests:jacocoTestReport UP-TO-DATE
+2026-11-27T08:33:26.0101330Z > Task :tools:kairo-cli:jacocoTestReport FROM-CACHE
+2026-11-27T08:33:26.0103109Z gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1795768398702.json
+2026-11-27T08:33:26.0104325Z 
+2026-11-27T08:33:26.0104707Z BUILD SUCCESSFUL in 11s
+2026-11-27T08:33:26.0105567Z 126 actionable tasks: 5 executed, 80 from cache, 41 up-to-date
+2026-11-27T08:33:26.0567223Z Configuration cache entry stored.
+2026-11-27T08:33:26.1861605Z ##[group]Run if grep -rnE --include="*.java" --exclude-dir=build "^import (android|androidx|javafx|javax\.swing|java\.awt|org\.lwjgl|org\.jetbrains\.skija|org\.reflections)\." \
+2026-11-27T08:33:26.1862938Z [36;1mif grep -rnE --include="*.java" --exclude-dir=build "^import (android|androidx|javafx|javax\.swing|java\.awt|org\.lwjgl|org\.jetbrains\.skija|org\.reflections)\." \[0m
+2026-11-27T08:33:26.1863969Z [36;1m  libraries/kairo-annotations libraries/kairo-core libraries/kairo-ir libraries/kairo-xml \[0m
+2026-11-27T08:33:26.1864751Z [36;1m  libraries/kairo-css-parser libraries/kairo-style libraries/kairo-state libraries/kairo-events \[0m
+2026-11-27T08:33:26.1865498Z [36;1m  libraries/kairo-lifecycle libraries/kairo-layout libraries/kairo-components-api \[0m
+2026-11-27T08:33:26.1866255Z [36;1m  libraries/kairo-components-basic libraries/kairo-components-input libraries/kairo-components-form \[0m
+2026-11-27T08:33:26.1867043Z [36;1m  libraries/kairo-components-list libraries/kairo-navigation libraries/kairo-async \[0m
+2026-11-27T08:33:26.1867989Z [36;1m  libraries/kairo-resources libraries/kairo-renderer-api libraries/kairo-runtime \[0m
+2026-11-27T08:33:26.1868716Z [36;1m  libraries/kairo-inspector libraries/kairo-testkit tools/kairo-cli examples/gallery; then[0m
+2026-11-27T08:33:26.1869393Z [36;1m  echo "ERROR: Forbidden platform import detected in neutral module!"[0m
+2026-11-27T08:33:26.1869825Z [36;1m  exit 1[0m
+2026-11-27T08:33:26.1870063Z [36;1mfi[0m
+2026-11-27T08:33:26.1902764Z shell: /usr/bin/bash -e {0}
+2026-11-27T08:33:26.1903062Z env:
+2026-11-27T08:33:26.1903418Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:33:26.1903967Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.21-2/x64
+2026-11-27T08:33:26.1904440Z   GRADLE_ACTION_ID: gradle/actions/setup-gradle
+2026-11-27T08:33:26.1904799Z   GRADLE_USER_HOME: /home/runner/.gradle
+2026-11-27T08:33:26.1905146Z   GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+2026-11-27T08:33:26.1905487Z   GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+2026-11-27T08:33:26.1905973Z   DEVELOCITY_INJECTION_INIT_SCRIPT_NAME: gradle-actions.inject-develocity.init.gradle
+2026-11-27T08:33:26.1906500Z   DEVELOCITY_INJECTION_CUSTOM_VALUE: gradle-actions
+2026-11-27T08:33:26.1907042Z   GITHUB_DEPENDENCY_GRAPH_ENABLED: false
+2026-11-27T08:33:26.1907348Z ##[endgroup]
+2026-11-27T08:33:26.2225707Z Post job cleanup.
+2026-11-27T08:33:26.4691403Z In post-action step
+2026-11-27T08:33:26.4706517Z ##[group]Stopping Gradle daemons
+2026-11-27T08:33:26.4708131Z Stopping Gradle daemons for /home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.10.2
+2026-11-27T08:33:26.4724990Z [command]/home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.10.2/bin/gradle --stop
+2026-11-27T08:33:27.1750911Z No Gradle daemons are running.
+2026-11-27T08:33:27.1883385Z ##[endgroup]
+2026-11-27T08:33:27.1899273Z ##[group]Provision Gradle >= 8.11
+2026-11-27T08:33:27.9602373Z Cache hit for: gradle-8.11
+2026-11-27T08:33:28.6951383Z Received 136585574 of 136585574 (100.0%), 186.1 MBs/sec
+2026-11-27T08:33:28.6955628Z Cache Size: ~130 MB (136585574 B)
+2026-11-27T08:33:28.6999171Z [command]/usr/bin/tar -xf /home/runner/work/_temp/c1c6febc-ba1d-4574-a693-a467d22b4599/cache.tzst -P -C /home/runner/work/Kairo/Kairo --use-compress-program unzstd
+2026-11-27T08:33:28.8872186Z Cache restored successfully
+2026-11-27T08:33:28.8937875Z Restored Gradle distribution gradle-8.11 from cache to /home/runner/work/_temp/.gradle-actions/gradle-installations/downloads/gradle-8.11-bin.zip
+2026-11-27T08:33:28.8954990Z [command]/usr/bin/unzip -o -q /home/runner/work/_temp/.gradle-actions/gradle-installations/downloads/gradle-8.11-bin.zip
+2026-11-27T08:33:29.8691112Z Extracted Gradle 8.11 to /home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.11
+2026-11-27T08:33:29.8693592Z Provisioned Gradle executable /home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.11/bin/gradle
+2026-11-27T08:33:29.8694787Z ##[endgroup]
+2026-11-27T08:33:29.8702356Z ##[group]Executing Gradle to clean up caches
+2026-11-27T08:33:29.8703103Z Cleaning up caches last used before 1795768372278
+2026-11-27T08:33:29.8707316Z [command]/home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.11/bin/gradle -g /home/runner/.gradle -I init.gradle --info --no-daemon --no-scan --build-cache -DGITHUB_DEPENDENCY_GRAPH_ENABLED=false -DGRADLE_ACTIONS_SKIP_BUILD_RESULT_CAPTURE=true noop
+2026-11-27T08:33:30.4037569Z Initialized native services in: /home/runner/.gradle/native
+2026-11-27T08:33:30.4050376Z Initialized jansi services in: /home/runner/.gradle/native
+2026-11-27T08:33:30.6142069Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-11-27T08:33:30.6176537Z Starting process 'Gradle build daemon'. Working directory: /home/runner/.gradle/daemon/8.11 Command: /usr/lib/jvm/temurin-17-jdk-amd64/bin/java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED -XX:MaxMetaspaceSize=384m -XX:+HeapDumpOnOutOfMemoryError -Xms256m -Xmx512m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -cp /home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.11/lib/gradle-daemon-main-8.11.jar -javaagent:/home/runner/work/_temp/.gradle-actions/gradle-installations/installs/gradle-8.11/lib/agents/gradle-instrumentation-agent-8.11.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.11
+2026-11-27T08:33:30.6181719Z Successfully started process 'Gradle build daemon'
+2026-11-27T08:33:31.6141333Z An attempt to start the daemon took 0.945 secs.
+2026-11-27T08:33:31.7137124Z The client will now receive all logging from the daemon (pid: 3053). The daemon log file: /home/runner/.gradle/daemon/8.11/daemon-3053.out.log
+2026-11-27T08:33:31.7138205Z Daemon will be stopped at the end of the build 
+2026-11-27T08:33:32.0138692Z Using 4 worker leases.
+2026-11-27T08:33:32.2152017Z Received JVM installation metadata from '/usr/lib/jvm/temurin-17-jdk-amd64': {JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64, JAVA_VERSION=17.0.21.1, JAVA_VENDOR=Eclipse Adoptium, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.21.1+2, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.21.1+2, VM_VENDOR=Eclipse Adoptium, OS_ARCH=amd64}
+2026-11-27T08:33:32.4160458Z Watching the file system is configured to be enabled if available
+2026-11-27T08:33:32.5161542Z Now considering [/home/runner/work/_temp/dummy-cleanup-project] as hierarchies to watch
+2026-11-27T08:33:32.5188867Z File system watching is active
+2026-11-27T08:33:32.9149708Z Caching disabled for Groovy DSL script compilation (cp_init) because:
+2026-11-27T08:33:32.9178842Z   Build cache is disabled
+2026-11-27T08:33:32.9179580Z   Not worth caching.
+2026-11-27T08:33:32.9180918Z Compiling initialization script '/home/runner/work/_temp/dummy-cleanup-project/init.gradle' using SubsetScriptTransformer.
+2026-11-27T08:33:33.5182453Z Caching disabled for Groovy DSL script compilation (init) because:
+2026-11-27T08:33:33.5188473Z   Build cache is disabled
+2026-11-27T08:33:33.5189368Z   Not worth caching.
+2026-11-27T08:33:33.5190847Z Compiling initialization script '/home/runner/work/_temp/dummy-cleanup-project/init.gradle' using BuildScriptTransformer.
+2026-11-27T08:33:34.2149482Z gradle/actions: Not capturing build results
+2026-11-27T08:33:34.4149087Z Starting Build
+2026-11-27T08:33:34.5142381Z Settings evaluated using settings file '/home/runner/work/_temp/dummy-cleanup-project/settings.gradle'.
+2026-11-27T08:33:34.5179641Z Using local directory build cache for the root build (location = /home/runner/.gradle/caches/build-cache-1, remove unused entries = older than 2026-11-27 08:32:52 UTC).
+2026-11-27T08:33:34.6149794Z Projects loaded. Root project using build file '/home/runner/work/_temp/dummy-cleanup-project/build.gradle'.
+2026-11-27T08:33:34.6157413Z Included projects: [root project 'dummy-cleanup-project']
+2026-11-27T08:33:34.9190942Z 
+2026-11-27T08:33:34.9191540Z > Configure project :
+2026-11-27T08:33:34.9192669Z Evaluating root project 'dummy-cleanup-project' using build file '/home/runner/work/_temp/dummy-cleanup-project/build.gradle'.
+2026-11-27T08:33:34.9193617Z All projects evaluated.
+2026-11-27T08:33:34.9194108Z Task name matched 'noop'
+2026-11-27T08:33:34.9194570Z Selected primary task 'noop' from project :
+2026-11-27T08:33:34.9195059Z Tasks to be executed: [task ':noop']
+2026-11-27T08:33:34.9195569Z Tasks that were excluded: []
+2026-11-27T08:33:34.9196164Z Resolve mutations for :noop (Thread[Execution worker,5,main]) started.
+2026-11-27T08:33:35.0152241Z :noop (Thread[Execution worker,5,main]) started.
+2026-11-27T08:33:35.0153179Z 
+2026-11-27T08:33:35.0153553Z > Task :noop UP-TO-DATE
+2026-11-27T08:33:35.0154291Z Skipping task ':noop' as it has no actions.
+2026-11-27T08:33:35.0154973Z 
+2026-11-27T08:33:35.0155329Z BUILD SUCCESSFUL in 5s
+2026-11-27T08:33:35.0157887Z Build cache (/home/runner/.gradle/caches/build-cache-1) removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1149437Z Build cache (/home/runner/.gradle/caches/build-cache-1) cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1150690Z Build cache (/home/runner/.gradle/caches/build-cache-1) cleaned up in 0.035 secs.
+2026-11-27T08:33:35.1152055Z groovy-dsl (/home/runner/.gradle/caches/8.11/groovy-dsl) removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1153478Z groovy-dsl (/home/runner/.gradle/caches/8.11/groovy-dsl) cleanup deleted 2 files/directories.
+2026-11-27T08:33:35.1154628Z groovy-dsl (/home/runner/.gradle/caches/8.11/groovy-dsl) cleaned up in 0.014 secs.
+2026-11-27T08:33:35.1156283Z jars (/home/runner/.gradle/caches/jars-9) cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1158057Z jars (/home/runner/.gradle/caches/jars-9) removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1159506Z jars (/home/runner/.gradle/caches/jars-9) cleanup deleted 1 files/directories.
+2026-11-27T08:33:35.1160686Z jars (/home/runner/.gradle/caches/jars-9) cleaned up in 0.006 secs.
+2026-11-27T08:33:35.1176893Z Artifact transforms cache (/home/runner/.gradle/caches/8.11/transforms) removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1179034Z Artifact transforms cache (/home/runner/.gradle/caches/8.11/transforms) cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1180402Z Artifact transforms cache (/home/runner/.gradle/caches/8.11/transforms) cleaned up in 0.0 secs.
+2026-11-27T08:33:35.1181999Z dependencies-accessors (/home/runner/.gradle/caches/8.11/dependencies-accessors) removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1183814Z dependencies-accessors (/home/runner/.gradle/caches/8.11/dependencies-accessors) cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1185323Z dependencies-accessors (/home/runner/.gradle/caches/8.11/dependencies-accessors) cleaned up in 0.0 secs.
+2026-11-27T08:33:35.1186620Z artifact cache (/home/runner/.gradle/caches/modules-2) cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1188381Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/resources-2.1] cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1190550Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/resources-2.1] removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1192671Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/resources-2.1] cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1194593Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/files-2.1] cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1196683Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/files-2.1] removing files not accessed on or after Fri Nov 27 08:32:52 UTC 2026.
+2026-11-27T08:33:35.1199185Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/files-2.1] cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1201116Z artifact cache (/home/runner/.gradle/caches/modules-2) [subdir: /home/runner/.gradle/caches/modules-2/metadata-2.107] cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1202619Z artifact cache (/home/runner/.gradle/caches/modules-2) cleanup deleted 0 files/directories.
+2026-11-27T08:33:35.1203680Z artifact cache (/home/runner/.gradle/caches/modules-2) cleaned up in 0.016 secs.
+2026-11-27T08:33:35.2211910Z ##[endgroup]
+2026-11-27T08:33:35.2212919Z ##[group]Caching Gradle state
+2026-11-27T08:33:35.2329350Z Not saving configuration-cache state, as no encryption key was provided
+2026-11-27T08:33:35.3273354Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Kairo/Kairo --files-from manifest.txt --use-compress-program zstdmt
+2026-11-27T08:33:35.4842026Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Kairo/Kairo --files-from manifest.txt --use-compress-program zstdmt
+2026-11-27T08:33:35.6041084Z Sent 128095 of 128095 (100.0%), 5.1 MBs/sec
+2026-11-27T08:33:35.7168128Z Saved cache entry with key gradle-groovy-dsl-v1-1b440061e7bcd0f378812629fa109fa5 from /home/runner/.gradle/caches/*/groovy-dsl/*/ in 267ms
+2026-11-27T08:33:38.2654815Z Sent 76324 of 76324 (100.0%), 1.1 MBs/sec
+2026-11-27T08:33:38.3625614Z Saved cache entry with key gradle-instrumented-jars-v1-97f90c972434d724cee8ca1041789538 from /home/runner/.gradle/caches/jars-*/*/ in 3065ms
+2026-11-27T08:33:38.3905353Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Kairo/Kairo --files-from manifest.txt --use-compress-program zstdmt
+2026-11-27T08:33:38.6274506Z Sent 4023995 of 4023995 (100.0%), 31.2 MBs/sec
+2026-11-27T08:33:38.7146544Z Saved cache entry with key gradle-home-v1|Linux-X64|kairo-java[57653e25ac93e60a96b0495cd4133681]-0f5bec497579a6a8b7472577a85371bfe6a6c097 from /home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle in 343ms
+2026-11-27T08:33:38.7150001Z ##[endgroup]
+2026-11-27T08:33:38.7155741Z Generating Job Summary
+2026-11-27T08:33:38.7169748Z Completed post-action step
+2026-11-27T08:33:38.7452305Z Post job cleanup.
+2026-11-27T08:33:38.8805257Z (node:3141) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-27T08:33:38.8806338Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-27T08:33:38.9012094Z Post job cleanup.
+2026-11-27T08:33:39.0067938Z [command]/usr/bin/git version
+2026-11-27T08:33:39.0110129Z git version 2.56.1
+2026-11-27T08:33:39.0150254Z Temporarily overriding HOME='/home/runner/work/_temp/55a18640-44d6-45ed-9f9b-5f5f67da1502' before making global git config changes
+2026-11-27T08:33:39.0151834Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-27T08:33:39.0155021Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Kairo/Kairo
+2026-11-27T08:33:39.0197380Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-27T08:33:39.0235932Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-27T08:33:39.0566117Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-27T08:33:39.0589826Z http.https://github.com/.extraheader
+2026-11-27T08:33:39.0602205Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-27T08:33:39.0640754Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-27T08:33:39.0978735Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-27T08:33:39.1024129Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-27T08:33:39.1491622Z Cleaning up orphan processes
+2026-11-27T08:33:39.1993404Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4, gradle/actions/setup-gradle@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,5 +1,6 @@
 plugins {
     id("java-library")
+    id("jacoco")
 }
 
 allprojects {
@@ -39,9 +40,112 @@ subprojects {
     }
 
     tasks.withType<JacocoReport>().configureEach {
+        dependsOn("test")
         reports {
             xml.required.set(true)
             html.required.set(true)
         }
     }
+
+    val hasMainSources = project.file("src/main/java").exists()
+    val hasTestSources = project.file("src/test/java").exists()
+    val isAndroidRenderer = project.name == "kairo-renderer-android"
+
+    tasks.withType<JacocoCoverageVerification>().configureEach {
+        dependsOn("jacocoTestReport")
+        onlyIf { hasMainSources && hasTestSources }
+        violationRules {
+            rule {
+                limit {
+                    counter = "LINE"
+                    value = "COVEREDRATIO"
+                    minimum = (if (isAndroidRenderer) "0.10" else "0.15").toBigDecimal()
+                }
+            }
+        }
+    }
+
+    tasks.named("check") {
+        dependsOn("jacocoTestCoverageVerification")
+    }
+}
+
+val neutralJavaSubprojects = subprojects.filter {
+    it.file("src/main/java").exists() &&
+        it.name != "kairo-platform-android" &&
+        it.name != "kairo-renderer-android"
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Generates an aggregated JaCoCo coverage report across all neutral JVM modules."
+
+    dependsOn(subprojects.map { it.tasks.named("test") })
+    dependsOn(neutralJavaSubprojects.map { it.tasks.named("classes") })
+
+    executionData.setFrom(
+        subprojects.map { sub ->
+            sub.fileTree(sub.layout.buildDirectory.dir("jacoco")) {
+                include("*.exec")
+            }
+        }
+    )
+    sourceDirectories.setFrom(
+        neutralJavaSubprojects.map { sub ->
+            sub.layout.projectDirectory.dir("src/main/java")
+        }
+    )
+    classDirectories.setFrom(
+        neutralJavaSubprojects.map { sub ->
+            sub.fileTree(sub.layout.buildDirectory.dir("classes/java/main")) {
+                exclude("**/android/**")
+            }
+        }
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    group = "verification"
+    description = "Enforces minimum aggregated LINE coverage across all neutral JVM modules."
+
+    dependsOn("jacocoTestReport")
+
+    executionData.setFrom(
+        subprojects.map { sub ->
+            sub.fileTree(sub.layout.buildDirectory.dir("jacoco")) {
+                include("*.exec")
+            }
+        }
+    )
+    sourceDirectories.setFrom(
+        neutralJavaSubprojects.map { sub ->
+            sub.layout.projectDirectory.dir("src/main/java")
+        }
+    )
+    classDirectories.setFrom(
+        neutralJavaSubprojects.map { sub ->
+            sub.fileTree(sub.layout.buildDirectory.dir("classes/java/main")) {
+                exclude("**/android/**")
+            }
+        }
+    )
+
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.40".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn("jacocoTestCoverageVerification")
 }
