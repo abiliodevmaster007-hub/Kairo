@@ -19,3 +19,7 @@ dependencies {
     implementation(project(":libraries:kairo-navigation"))
     implementation(project(":libraries:kairo-inspector"))
 }
+
+tasks.named<JavaExec>("run") {
+    workingDir = rootProject.projectDir
+}

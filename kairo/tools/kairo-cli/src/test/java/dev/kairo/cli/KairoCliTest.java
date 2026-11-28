@@ -96,4 +96,38 @@ final class KairoCliTest {
                 .orElseThrow()
                 .ok()).isFalse();
     }
+
+    @Test
+    void apkCommandResolvesIndependentPackagingModuleAndHandlesMissingTargetCleanly() throws Exception {
+        Path monoRoot = tempDir.resolve("kairo-mono");
+        Path apkModule = monoRoot.resolve("packaging/kairo-android-apk");
+        Files.createDirectories(apkModule);
+        Files.writeString(
+                apkModule.resolve("build.gradle.kts"),
+                "plugins { id(\"com.android.application\") version \"8.8.0\" }\n"
+        );
+
+        GradleRunner runner = new GradleRunner();
+        GradleRunner.ExecutionPlan debugPlan = runner.resolvePlan(GradleRunner.Action.APK, monoRoot);
+        assertThat(debugPlan.workingDirectory()).isEqualTo(apkModule.toAbsolutePath().normalize());
+        assertThat(debugPlan.androidPackagingTarget()).isTrue();
+        assertThat(debugPlan.command()).contains("assembleDebug", "--no-daemon");
+
+        GradleRunner.ExecutionPlan releasePlan = runner.resolvePlan(GradleRunner.Action.APK_RELEASE, monoRoot);
+        assertThat(releasePlan.command()).contains("assembleRelease", "--no-daemon");
+
+        GradleRunner.ExecutionPlan buildPlan = runner.resolvePlan(GradleRunner.Action.BUILD, monoRoot);
+        assertThat(buildPlan.workingDirectory()).isEqualTo(apkModule.toAbsolutePath().normalize());
+        assertThat(buildPlan.command()).contains("assembleDebug");
+
+        ByteArrayOutputStream outBuf = new ByteArrayOutputStream();
+        ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
+        int missingCode = KairoCli.execute(
+                new String[]{"apk", "--dir", tempDir.resolve("empty-dir").toString()},
+                new PrintStream(outBuf),
+                new PrintStream(errBuf)
+        );
+        assertThat(missingCode).isEqualTo(1);
+        assertThat(errBuf.toString(StandardCharsets.UTF_8)).contains("No Android packaging module");
+    }
 }

@@ -14,6 +14,7 @@ import dev.kairo.renderer.android.AndroidRenderer;
 import dev.kairo.runtime.KairoRuntime;
 import dev.kairo.xml.KairoXmlParser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -61,8 +62,14 @@ public final class KairoLoginActivity extends Activity {
     }
 
     private String readAsset(String path) {
-        try (InputStream in = getAssets().open(path)) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        try (InputStream in = getAssets().open(path);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            return out.toString(StandardCharsets.UTF_8);
         } catch (IOException ex) {
             throw new IllegalStateException("Missing asset: " + path, ex);
         }

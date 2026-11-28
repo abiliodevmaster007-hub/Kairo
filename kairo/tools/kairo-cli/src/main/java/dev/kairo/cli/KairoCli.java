@@ -35,6 +35,7 @@ public final class KairoCli {
                 case "create" -> handleCreate(args, workDir, out, err);
                 case "doctor" -> handleDoctor(workDir, out);
                 case "inspect" -> handleInspect(args, workDir, out, err);
+                case "apk" -> handleApk(args, workDir, out, err);
                 case "build" -> new GradleRunner().execute(GradleRunner.Action.BUILD, workDir, out, err);
                 case "run" -> new GradleRunner().execute(GradleRunner.Action.RUN, workDir, out, err);
                 case "clean" -> new GradleRunner().execute(GradleRunner.Action.CLEAN, workDir, out, err);
@@ -53,6 +54,12 @@ public final class KairoCli {
             err.println("Error: " + ex.getMessage());
             return 1;
         }
+    }
+
+    private static int handleApk(String[] args, Path workDir, PrintStream out, PrintStream err) {
+        boolean release = hasFlag(args, "--release");
+        GradleRunner.Action action = release ? GradleRunner.Action.APK_RELEASE : GradleRunner.Action.APK;
+        return new GradleRunner().execute(action, workDir, out, err);
     }
 
     private static int handleCreate(String[] args, Path parentDir, PrintStream out, PrintStream err)
@@ -94,6 +101,15 @@ public final class KairoCli {
         return report.hasErrors() ? 1 : 0;
     }
 
+    private static boolean hasFlag(String[] args, String flag) {
+        for (String arg : args) {
+            if (flag.equals(arg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static String resolveOptionValue(String[] args, String flag) {
         for (int i = 0; i < args.length - 1; i++) {
             if (flag.equals(args[i])) {
@@ -115,7 +131,8 @@ public final class KairoCli {
                   kairo create <nome> [--dir <pasta>] [--package <pkg>]   Criar projeto Kairo v1 completo
                   kairo doctor [--dir <pasta>]                            Verificar Java 17+, Gradle, SDK e ArchGuard
                   kairo inspect [pasta]                                   Validar XML, IR semântico e dialeto .kcss
-                  kairo build [--dir <pasta>]                             Compilar APK via ./gradlew assembleDebug
+                  kairo apk [--dir <pasta>] [--release]                   Empacotar APK Android headless (sem Android Studio)
+                  kairo build [--dir <pasta>]                             Compilar APK via assembleDebug
                   kairo run [--dir <pasta>]                               Instalar no emulador/dispositivo
                   kairo clean [--dir <pasta>]                             Limpar build Gradle
                   kairo test [--dir <pasta>]                              Correr suites JVM + ArchUnit
