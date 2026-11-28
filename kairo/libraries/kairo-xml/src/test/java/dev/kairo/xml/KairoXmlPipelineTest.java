@@ -58,4 +58,14 @@ final class KairoXmlPipelineTest {
                 .extracting(d -> d.code())
                 .contains("STYLE_WEB_CSS_UNSUPPORTED", "EXPR_UNSAFE");
     }
+
+    @Test
+    void reportsDiagnosticWhenXmlSourceIsNull() {
+        IRDocument doc = new KairoXmlParser().parseDocument("missing.xml", null);
+        assertThat(doc.diagnostics().hasErrors()).isTrue();
+        assertThat(doc.root()).isNull();
+        assertThat(doc.diagnostics().all())
+                .extracting(d -> d.code())
+                .contains("XML_NULL_SOURCE");
+    }
 }

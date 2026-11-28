@@ -11,6 +11,7 @@ import dev.kairo.layout.LayoutBounds;
 import dev.kairo.layout.LayoutEngine;
 import dev.kairo.renderer.api.RenderEngineStats;
 import dev.kairo.renderer.api.RenderPatch;
+import dev.kairo.renderer.api.Renderer;
 import dev.kairo.resources.ResourceManager;
 import dev.kairo.style.ComputedStyle;
 import dev.kairo.style.VisualState;
@@ -55,6 +56,7 @@ public final class KairoRenderEngine {
 
     private final Map<KairoId, NodeRecord> nodes = new LinkedHashMap<>();
     private final Map<View, LayoutBounds> pendingBounds = new LinkedHashMap<>();
+    private KairoId rootNodeId;
     private Consumer<UIEvent> eventSink = ignored -> {};
 
     private long totalPatchesApplied;
@@ -116,6 +118,7 @@ public final class KairoRenderEngine {
         View rootView = viewFactory.createView(rootId, componentType, this.eventSink);
         NodeRecord rec = new NodeRecord(rootId, componentType, rootView);
         nodes.put(rootId, rec);
+        this.rootNodeId = rootId;
         rootContainer.addView(rootView);
         nativeEngine.setRoot(rootId.value());
         syncVisuals(rec);
@@ -159,6 +162,7 @@ public final class KairoRenderEngine {
         }
         nodes.clear();
         pendingBounds.clear();
+        rootNodeId = null;
         nativeEngine.clear();
     }
 
@@ -169,6 +173,14 @@ public final class KairoRenderEngine {
 
     public Set<KairoId> mountedIds() {
         return Collections.unmodifiableSet(nodes.keySet());
+    }
+
+    public Renderer.RendererTreeSnapshot inspectTree() {
+        Map<KairoId, Renderer.RendererNodeSnapshot> treeNodes = new LinkedHashMap<>(nodes.size());
+        for (NodeRecord rec : nodes.values()) {
+            treeNodes.put(rec.id, new Renderer.RendererNodeSnapshot(rec.id, rec.componentType, rec.childIds));
+        }
+        return new Renderer.RendererTreeSnapshot(rootNodeId, treeNodes);
     }
 
     public RenderEngineStats stats() {

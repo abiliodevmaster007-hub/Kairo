@@ -312,5 +312,14 @@ public final class FutureState<T> implements Disposable {
     @Override
     public void dispose() {
         cancel();
+        isIdle.dispose();
+        isLoading.dispose();
+        isSuccess.dispose();
+        isError.dispose();
+        isCancelled.dispose();
+        isDone.dispose();
+        successListeners.clear();
+        errorListeners.clear();
+        cancelListeners.clear();
     }
 }

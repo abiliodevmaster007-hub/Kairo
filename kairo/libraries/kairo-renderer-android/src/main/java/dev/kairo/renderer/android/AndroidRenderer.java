@@ -101,6 +101,11 @@ public final class AndroidRenderer implements Renderer {
     }
 
     @Override
+    public RendererTreeSnapshot inspectTree() {
+        return engine.inspectTree();
+    }
+
+    @Override
     public RenderEngineStats engineStats() {
         return engine.stats();
     }

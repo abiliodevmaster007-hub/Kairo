@@ -187,4 +187,23 @@ final class FutureStateTest {
         assertThat(future.status.get()).isEqualTo(Status.SUCCESS);
         assertThat(future.value.get()).isEqualTo("dispatched");
     }
+
+    @Test
+    void disposeCancelsWorkAndDisposesInternalDerivedFlags() {
+        LifecycleScope scope = new LifecycleScope();
+        scope.onMount();
+        ManualScheduler worker = new ManualScheduler();
+        ManualScheduler ui = new ManualScheduler();
+
+        FutureState<String> future = FutureState.run(scope, worker, ui, token -> "done");
+        future.dispose();
+
+        assertThat(future.status.get()).isEqualTo(Status.CANCELLED);
+        assertThat(future.isIdle.isDisposed()).isTrue();
+        assertThat(future.isLoading.isDisposed()).isTrue();
+        assertThat(future.isSuccess.isDisposed()).isTrue();
+        assertThat(future.isError.isDisposed()).isTrue();
+        assertThat(future.isCancelled.isDisposed()).isTrue();
+        assertThat(future.isDone.isDisposed()).isTrue();
+    }
 }

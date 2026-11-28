@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
  * and visual state pseudo-classes while rejecting web-only selectors and properties.
  */
 public final class KairoCssParser {
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
     private static final Pattern IMPORT_PATTERN = Pattern.compile("@import\\s+[\"']([^\"']+)[\"']\\s*;");
     private static final Pattern BLOCK_PATTERN = Pattern.compile("([^{}]+)\\{([^{}]*)\\}", Pattern.DOTALL);
 
@@ -28,7 +29,36 @@ public final class KairoCssParser {
 
     public ParseResult parseWithDiagnostics(String fileName, String cssSource) {
         Diagnostic.Bag diagnostics = new Diagnostic.Bag();
-        String cleaned = cssSource.replaceAll("/\\*.*?\\*/", "");
+        if (cssSource == null) {
+            diagnostics.error("STYLE_NULL_SOURCE", "Stylesheet source cannot be null", new SourceLocation(fileName, 1, 1));
+            return new ParseResult(CssStylesheet.empty(), diagnostics);
+        }
+        String cleaned = COMMENT_PATTERN.matcher(cssSource).replaceAll("");
+
+        int braceBalance = 0;
+        for (int i = 0; i < cleaned.length(); i++) {
+            char c = cleaned.charAt(i);
+            if (c == '{') {
+                braceBalance++;
+            } else if (c == '}') {
+                braceBalance--;
+                if (braceBalance < 0) {
+                    diagnostics.error(
+                            "STYLE_UNBALANCED_BRACES",
+                            "Unexpected closing '}' in stylesheet",
+                            new SourceLocation(fileName, countLinesUpTo(cleaned, i), 1)
+                    );
+                    braceBalance = 0;
+                }
+            }
+        }
+        if (braceBalance > 0) {
+            diagnostics.error(
+                    "STYLE_UNBALANCED_BRACES",
+                    "Unclosed '{' block in stylesheet",
+                    new SourceLocation(fileName, countLinesUpTo(cleaned, cleaned.length()), 1)
+            );
+        }
 
         List<String> imports = new ArrayList<>();
         Matcher importMatcher = IMPORT_PATTERN.matcher(cleaned);

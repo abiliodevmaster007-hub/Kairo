@@ -37,12 +37,21 @@ public final class FakeRenderer implements Renderer {
             this.style = style;
         }
 
+        private FakeNode copy() {
+            FakeNode clone = new FakeNode(id, componentType, props, style);
+            clone.childOrder.addAll(childOrder);
+            clone.bounds = bounds;
+            clone.visualStates = visualStates;
+            return clone;
+        }
+
         @Override public KairoId id() { return id; }
         @Override public String componentType() { return componentType; }
     }
 
     private final Map<KairoId, FakeNode> nodes = new LinkedHashMap<>();
     private final List<RenderPatch> appliedPatches = new ArrayList<>();
+    private KairoId rootId;
     private Consumer<UIEvent> eventSink = ignored -> {};
 
     @Override
@@ -62,6 +71,7 @@ public final class FakeRenderer implements Renderer {
     public RenderHandle mountRoot(KairoId rootId, String componentType, Consumer<UIEvent> eventSink) {
         this.eventSink = eventSink != null ? eventSink : ignored -> {};
         nodes.clear();
+        this.rootId = rootId;
         FakeNode root = new FakeNode(rootId, componentType, Map.of(), ComputedStyle.empty());
         nodes.put(rootId, root);
         return root;
@@ -69,45 +79,62 @@ public final class FakeRenderer implements Renderer {
 
     @Override
     public void apply(List<RenderPatch> patchBatch) {
-        appliedPatches.addAll(patchBatch);
-        for (RenderPatch patch : patchBatch) {
-            if (patch instanceof RenderPatch.CreateNode create) {
-                nodes.put(create.id(), new FakeNode(create.id(), create.componentType(), create.props(), create.style()));
-            } else if (patch instanceof RenderPatch.UpdateProp prop) {
-                FakeNode node = nodes.get(prop.id());
-                if (node != null) {
-                    if (prop.value() == null) {
-                        node.props.remove(prop.property());
-                    } else {
-                        node.props.put(prop.property(), prop.value());
+        if (patchBatch == null || patchBatch.isEmpty()) {
+            return;
+        }
+        Map<KairoId, FakeNode> snapshot = new LinkedHashMap<>(nodes.size());
+        for (var entry : nodes.entrySet()) {
+            snapshot.put(entry.getKey(), entry.getValue().copy());
+        }
+        int historySizeBefore = appliedPatches.size();
+        try {
+            for (RenderPatch patch : patchBatch) {
+                if (patch instanceof RenderPatch.CreateNode create) {
+                    nodes.put(create.id(), new FakeNode(create.id(), create.componentType(), create.props(), create.style()));
+                } else if (patch instanceof RenderPatch.UpdateProp prop) {
+                    FakeNode node = nodes.get(prop.id());
+                    if (node != null) {
+                        if (prop.value() == null) {
+                            node.props.remove(prop.property());
+                        } else {
+                            node.props.put(prop.property(), prop.value());
+                        }
                     }
+                } else if (patch instanceof RenderPatch.UpdateStyle stylePatch) {
+                    FakeNode node = nodes.get(stylePatch.id());
+                    if (node != null) node.style = stylePatch.style();
+                } else if (patch instanceof RenderPatch.UpdateVisualStates vsPatch) {
+                    FakeNode node = nodes.get(vsPatch.id());
+                    if (node != null) node.visualStates = Set.copyOf(vsPatch.states());
+                } else if (patch instanceof RenderPatch.UpdateBounds boundsPatch) {
+                    FakeNode node = nodes.get(boundsPatch.id());
+                    if (node != null) node.bounds = boundsPatch.bounds();
+                } else if (patch instanceof RenderPatch.InsertChild insert) {
+                    FakeNode parent = nodes.get(insert.parentId());
+                    if (parent != null) {
+                        parent.childOrder.remove(insert.childId());
+                        int idx = Math.max(0, Math.min(insert.index(), parent.childOrder.size()));
+                        parent.childOrder.add(idx, insert.childId());
+                    }
+                } else if (patch instanceof RenderPatch.MoveChild move) {
+                    FakeNode parent = nodes.get(move.parentId());
+                    if (parent != null) {
+                        parent.childOrder.remove(move.childId());
+                        int idx = Math.max(0, Math.min(move.toIndex(), parent.childOrder.size()));
+                        parent.childOrder.add(idx, move.childId());
+                    }
+                } else if (patch instanceof RenderPatch.RemoveNode remove) {
+                    removeSubtree(remove.id());
                 }
-            } else if (patch instanceof RenderPatch.UpdateStyle stylePatch) {
-                FakeNode node = nodes.get(stylePatch.id());
-                if (node != null) node.style = stylePatch.style();
-            } else if (patch instanceof RenderPatch.UpdateVisualStates vsPatch) {
-                FakeNode node = nodes.get(vsPatch.id());
-                if (node != null) node.visualStates = Set.copyOf(vsPatch.states());
-            } else if (patch instanceof RenderPatch.UpdateBounds boundsPatch) {
-                FakeNode node = nodes.get(boundsPatch.id());
-                if (node != null) node.bounds = boundsPatch.bounds();
-            } else if (patch instanceof RenderPatch.InsertChild insert) {
-                FakeNode parent = nodes.get(insert.parentId());
-                if (parent != null) {
-                    parent.childOrder.remove(insert.childId());
-                    int idx = Math.max(0, Math.min(insert.index(), parent.childOrder.size()));
-                    parent.childOrder.add(idx, insert.childId());
-                }
-            } else if (patch instanceof RenderPatch.MoveChild move) {
-                FakeNode parent = nodes.get(move.parentId());
-                if (parent != null) {
-                    parent.childOrder.remove(move.childId());
-                    int idx = Math.max(0, Math.min(move.toIndex(), parent.childOrder.size()));
-                    parent.childOrder.add(idx, move.childId());
-                }
-            } else if (patch instanceof RenderPatch.RemoveNode remove) {
-                removeSubtree(remove.id());
             }
+            appliedPatches.addAll(patchBatch);
+        } catch (RuntimeException ex) {
+            nodes.clear();
+            nodes.putAll(snapshot);
+            while (appliedPatches.size() > historySizeBefore) {
+                appliedPatches.remove(appliedPatches.size() - 1);
+            }
+            throw ex;
         }
     }
 
@@ -127,11 +154,21 @@ public final class FakeRenderer implements Renderer {
     @Override
     public void unmountRoot(KairoId rootId) {
         nodes.clear();
+        this.rootId = null;
     }
 
     @Override
     public Set<KairoId> mountedIds() {
         return Set.copyOf(nodes.keySet());
+    }
+
+    @Override
+    public RendererTreeSnapshot inspectTree() {
+        Map<KairoId, RendererNodeSnapshot> treeNodes = new LinkedHashMap<>(nodes.size());
+        for (FakeNode node : nodes.values()) {
+            treeNodes.put(node.id(), new RendererNodeSnapshot(node.id(), node.componentType(), node.childOrder));
+        }
+        return new RendererTreeSnapshot(rootId, treeNodes);
     }
 
     public FakeNode findById(KairoId id) {

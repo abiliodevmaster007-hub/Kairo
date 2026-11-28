@@ -64,4 +64,32 @@ final class KairoStyleDialectTest {
                         "STYLE_WEB_IMPORTANT_FORBIDDEN"
                 );
     }
+
+    @Test
+    void stripsMultilineCommentsAndReportsUnbalancedBracesAndNullSource() {
+        String multiline = """
+                /*
+                 * @media (min-width: 768px) { color: red; }
+                 */
+                Screen.clean {
+                  background: #111827;
+                }
+                """;
+        KairoCssParser parser = new KairoCssParser();
+        KairoCssParser.ParseResult cleanResult = parser.parseWithDiagnostics("clean.kcss", multiline);
+        assertThat(cleanResult.diagnostics().hasErrors()).isFalse();
+        assertThat(cleanResult.stylesheet().rules()).hasSize(1);
+
+        KairoCssParser.ParseResult unbalanced = parser.parseWithDiagnostics("broken.kcss", "Screen { background: #000;");
+        assertThat(unbalanced.diagnostics().hasErrors()).isTrue();
+        assertThat(unbalanced.diagnostics().all())
+                .extracting(Diagnostic::code)
+                .contains("STYLE_UNBALANCED_BRACES");
+
+        KairoCssParser.ParseResult nullResult = parser.parseWithDiagnostics("null.kcss", null);
+        assertThat(nullResult.diagnostics().hasErrors()).isTrue();
+        assertThat(nullResult.diagnostics().all())
+                .extracting(Diagnostic::code)
+                .contains("STYLE_NULL_SOURCE");
+    }
 }

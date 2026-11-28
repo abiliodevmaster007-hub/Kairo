@@ -82,6 +82,11 @@ public final class KairoXmlParser {
         Map<String, String> componentImports = new LinkedHashMap<>();
         NodeIR root = null;
 
+        if (xmlSource == null) {
+            diagnostics.error("XML_NULL_SOURCE", "XML source cannot be null", new SourceLocation(fileName, 1, 1));
+            return new IRDocument(fileName, null, styleImports, componentImports, diagnostics);
+        }
+
         XMLStreamReader reader = null;
         try {
             reader = SECURE_FACTORY.get().createXMLStreamReader(new StringReader(xmlSource));
