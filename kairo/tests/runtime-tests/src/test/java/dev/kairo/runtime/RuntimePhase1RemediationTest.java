@@ -8,6 +8,7 @@ import dev.kairo.core.KairoId;
 import dev.kairo.core.SourceLocation;
 import dev.kairo.css.CssStylesheet;
 import dev.kairo.events.CommonEvents;
+import dev.kairo.events.UIEvent;
 import dev.kairo.ir.BindingSpec;
 import dev.kairo.ir.NodeIR;
 import dev.kairo.layout.LayoutEngine;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -141,8 +143,8 @@ final class RuntimePhase1RemediationTest {
                     : BasicUI.screen("appRoot").child(BasicUI.text("A").id("textA")).build();
         });
 
-        State<String> mode = State.of("a");
-        KairoRuntime.ScreenModel model = modelOf(Map.of("mode", () -> mode), Map.of(), Map.of());
+        AtomicReference<String> mode = new AtomicReference<>("a");
+        KairoRuntime.ScreenModel model = modelOf(Map.of("mode", mode::get), Map.of(), Map.of());
         SourceLocation loc = new SourceLocation("fail.xml", 1, 1);
         NodeIR rootIR = new NodeIR(
                 "RootSwitcher",
@@ -179,8 +181,9 @@ final class RuntimePhase1RemediationTest {
         runtime.mount(rootIR, CssStylesheet.empty(), model, Fixtures.STANDARD_PHONE);
         assertThat(delegate.findByLogicalId("appRoot").componentType()).isEqualTo("Screen");
 
+        mode.set("b");
         failNextApply.set(true);
-        assertThatThrownBy(() -> mode.set("b"))
+        assertThatThrownBy(runtime::recompute)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Simulated renderer failure");
 
